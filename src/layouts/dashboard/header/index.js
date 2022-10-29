@@ -1,7 +1,8 @@
 import PropTypes from 'prop-types';
+import { useState, useEffect } from 'react';
 // @mui
 import { styled } from '@mui/material/styles';
-import { Box, Stack, AppBar, Toolbar, IconButton } from '@mui/material';
+import { Box, Stack, AppBar, Toolbar, IconButton, List, ListItem, ListItemButton, ListItemText } from '@mui/material';
 // utils
 import { bgBlur } from '../../../utils/cssStyles';
 // components
@@ -43,6 +44,34 @@ Header.propTypes = {
 };
 
 export default function Header({ onOpenNav }) {
+  const [userCurrPosition, setUserCurrPosition] = useState({
+    latitude: 39.9,
+    longitude: -75.2
+  });
+  const [restaurantList, setRestaurantList] = useState([]);
+
+  // useEffect(() => {
+  //   navigator.geolocation.getCurrentPosition((pos) => {
+  //     if(pos !== undefined) {
+  //       setUserCurrPosition({
+  //         latitude: pos.coords.latitude,
+  //         longitude: pos.coords.longitude
+  //       });
+  //     }
+  //   });
+  // }, []);
+
+  const getSearchSuggestListItems = () => {
+    return restaurantList.map(item => (
+      <ListItem disablePadding key={item.businessID}>
+        <ListItemButton>
+          <ListItemText primary={item.businessName} secondary={item.address} />
+          <ListItemText primary={`${(item.distance * 0.000621371).toFixed(1)} mi`} />
+        </ListItemButton>
+      </ListItem>
+    ));
+  };
+
   return (
     <StyledRoot>
       <StyledToolbar>
@@ -57,7 +86,10 @@ export default function Header({ onOpenNav }) {
           <Iconify icon="eva:menu-2-fill" />
         </IconButton>
 
-        <Searchbar />
+        <Searchbar
+          userCurrPosition={userCurrPosition}
+          setRestaurantList={setRestaurantList}
+        />
         <Box sx={{ flexGrow: 1 }} />
 
         <Stack
@@ -73,6 +105,11 @@ export default function Header({ onOpenNav }) {
           <AccountPopover />
         </Stack>
       </StyledToolbar>
+      <Box sx={{ width: '100%', maxWidth: 500, color: '#5A5A5A'}}>
+        <List>
+          {getSearchSuggestListItems()}
+        </List>
+      </Box>
     </StyledRoot>
   );
 }

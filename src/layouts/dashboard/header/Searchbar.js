@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import axios from 'axios';
+import { useState, useEffect } from 'react';
 // @mui
 import { styled } from '@mui/material/styles';
 import { Input, Slide, Button, IconButton, InputAdornment, ClickAwayListener } from '@mui/material';
@@ -32,14 +33,41 @@ const StyledSearchbar = styled('div')(({ theme }) => ({
 
 // ----------------------------------------------------------------------
 
-export default function Searchbar() {
+export default function Searchbar({ userCurrPosition, setRestaurantList }) {
+  const client = axios.create({
+    baseURL: "http://localhost:5000/restaurant" 
+  });
+
   const [open, setOpen] = useState(false);
+  const [inputRestaurant, setInputRestaurant] = useState('');
+
+  useEffect(() => {
+    async function fetchRestaurantList() {
+      const response = await client.get('/list', {
+        params: {
+          business_name: inputRestaurant,
+          latitude: userCurrPosition.latitude,
+          longitude: userCurrPosition.longitude,
+          radius: 10000,
+          length: 8
+        }
+      });
+      setRestaurantList(response.data.businessList);
+    }
+    if(inputRestaurant.length >= 3) {
+      fetchRestaurantList();
+    }
+    else {
+      setRestaurantList([]);
+    }
+  }, [inputRestaurant, userCurrPosition]);
 
   const handleOpen = () => {
     setOpen(!open);
   };
 
   const handleClose = () => {
+    setRestaurantList([]);
     setOpen(false);
   };
 
@@ -51,7 +79,6 @@ export default function Searchbar() {
             <Iconify icon="eva:search-fill" />
           </IconButton>
         )}
-
         <Slide direction="down" in={open} mountOnEnter unmountOnExit>
           <StyledSearchbar>
             <Input
@@ -65,6 +92,7 @@ export default function Searchbar() {
                 </InputAdornment>
               }
               sx={{ mr: 1, fontWeight: 'fontWeightBold' }}
+              onChange={(e) => setInputRestaurant(e.target.value)}
             />
             <Button variant="contained" onClick={handleClose}>
               Search
