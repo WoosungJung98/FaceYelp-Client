@@ -136,10 +136,7 @@ export default function DashboardAppPage() {
         })()
       }
     }
-  }, [
-    state,
-    userCurrPosition
-  ]);
+  }, [state, userCurrPosition]);
 
   const mapApiIsLoaded = (map, maps) => {
     mapsApi.current = maps;
