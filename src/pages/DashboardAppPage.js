@@ -113,7 +113,7 @@ export default function DashboardAppPage() {
       // markers can only be keyboard focusable when they have click listeners
       // open info window when marker is clicked
       marker.addListener("click", () => {
-        mapInfoWindow.current.setContent("JESUS");
+        mapInfoWindow.current.setContent(business.businessName);
         mapInfoWindow.current.open(mapInstance.current, marker);
       });
       return marker;
