@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import axios from 'axios';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 // @mui
 import { styled } from '@mui/material/styles';
 import { Input, Slide, Button, IconButton, InputAdornment, ClickAwayListener } from '@mui/material';
@@ -32,15 +34,65 @@ const StyledSearchbar = styled('div')(({ theme }) => ({
 
 // ----------------------------------------------------------------------
 
-export default function Searchbar() {
+export default function Searchbar({ setRestaurantList }) {
   const [open, setOpen] = useState(false);
+  const [inputRestaurant, setInputRestaurant] = useState('');
+  const [userCurrPosition, setUserCurrPosition] = useState({
+    latitude: 39.9,
+    longitude: -75.2
+  });
+
+  const navigate = useNavigate();
+  const client = axios.create({
+    baseURL: "http://localhost:5000/restaurant" 
+  });
+
+  // useEffect(() => {
+  //   navigator.geolocation.getCurrentPosition((pos) => {
+  //     if(pos !== undefined) {
+  //       setUserCurrPosition({
+  //         latitude: pos.coords.latitude,
+  //         longitude: pos.coords.longitude
+  //       });
+  //     }
+  //   });
+  // }, []);
+
+  useEffect(() => {
+    async function fetchRestaurantList() {
+      const response = await client.get('/list', {
+        params: {
+          business_name: inputRestaurant,
+          latitude: userCurrPosition.latitude,
+          longitude: userCurrPosition.longitude,
+          radius: 10000,
+          length: 8
+        }
+      });
+      setRestaurantList(response.data.businessList);
+    }
+    if(inputRestaurant.length >= 3) {
+      fetchRestaurantList();
+    }
+    else {
+      setRestaurantList([]);
+    }
+  }, [inputRestaurant, userCurrPosition]);
 
   const handleOpen = () => {
     setOpen(!open);
   };
 
   const handleClose = () => {
+    setInputRestaurant('');
     setOpen(false);
+  };
+
+  const handleSearch = () => {
+    const navState = {inputRestaurant};
+    setInputRestaurant('');
+    setOpen(false);
+    navigate('/dashboard/app', { replace: true, state: navState });
   };
 
   return (
@@ -51,7 +103,6 @@ export default function Searchbar() {
             <Iconify icon="eva:search-fill" />
           </IconButton>
         )}
-
         <Slide direction="down" in={open} mountOnEnter unmountOnExit>
           <StyledSearchbar>
             <Input
@@ -65,8 +116,9 @@ export default function Searchbar() {
                 </InputAdornment>
               }
               sx={{ mr: 1, fontWeight: 'fontWeightBold' }}
+              onChange={(e) => setInputRestaurant(e.target.value)}
             />
-            <Button variant="contained" onClick={handleClose}>
+            <Button variant="contained" onClick={handleSearch}>
               Search
             </Button>
           </StyledSearchbar>
