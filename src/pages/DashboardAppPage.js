@@ -127,7 +127,6 @@ export default function DashboardAppPage() {
        mapInstance.current !== null &&
        mapInfoWindow.current !== null &&
        markerClusterer.current !== null) {
-      console.log("useEffect executed");
       markerClusterer.current.clearMarkers(true);
       if(state !== null && 'inputRestaurant' in state) {
         (async () => {
