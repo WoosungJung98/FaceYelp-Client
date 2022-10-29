@@ -1,5 +1,10 @@
+/* eslint-disable */
+import axios from 'axios';
+import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { faker } from '@faker-js/faker';
+import GoogleMapReact from 'google-map-react';
 // @mui
 import { useTheme } from '@mui/material/styles';
 import { Grid, Container, Typography } from '@mui/material';
@@ -21,13 +26,121 @@ import {
 // ----------------------------------------------------------------------
 
 export default function DashboardAppPage() {
+  const [userCurrPosition, setUserCurrPosition] = useState({
+    latitude: 39.9,
+    longitude: -75.2
+  });
+
   const theme = useTheme();
+  const { state } = useLocation();
+
+  const locations = [
+    { lat: -31.56391, lng: 147.154312, key: 'asdf0' },
+    { lat: -33.718234, lng: 150.363181, key: 'asdf1' },
+    { lat: -33.727111, lng: 150.371124, key: 'asdf2' },
+    { lat: -33.848588, lng: 151.209834, key: 'asdf3' },
+    { lat: -33.851702, lng: 151.216968, key: 'asdf4' },
+    { lat: -34.671264, lng: 150.863657, key: 'asdf5' },
+    { lat: -35.304724, lng: 148.662905, key: 'asdf6' },
+    { lat: -36.817685, lng: 175.699196, key: 'asdf7' },
+    { lat: -36.828611, lng: 175.790222, key: 'asdf8' },
+    { lat: -37.75, lng: 145.116667, key: 'asdf9' },
+    { lat: -37.759859, lng: 145.128708, key: 'asdf10' },
+    { lat: -37.765015, lng: 145.133858, key: 'asdf11' },
+    { lat: -37.770104, lng: 145.143299, key: 'asdf12' },
+    { lat: -37.7737, lng: 145.145187, key: 'asdf13' },
+    { lat: -37.774785, lng: 145.137978, key: 'asdf14' },
+    { lat: -37.819616, lng: 144.968119, key: 'asdf15' },
+    { lat: -38.330766, lng: 144.695692, key: 'asdf16' },
+    { lat: -39.927193, lng: 175.053218, key: 'asdf17' },
+    { lat: -41.330162, lng: 174.865694, key: 'asdf18' },
+    { lat: -42.734358, lng: 147.439506, key: 'asdf19' },
+    { lat: -42.734358, lng: 147.501315, key: 'asdf20' },
+    { lat: -42.735258, lng: 147.438, key: 'asdf21' },
+    { lat: -43.999792, lng: 170.463352, key: 'asdf22' },
+  ];
+
+  const client = axios.create({
+    baseURL: "http://localhost:5000/restaurant" 
+  });
+
+  useEffect(() => {
+    // navigator.geolocation.getCurrentPosition((pos) => {
+    //   if(pos !== undefined) {
+    //     setUserCurrPosition({
+    //       latitude: pos.coords.latitude,
+    //       longitude: pos.coords.longitude
+    //     });
+    //   }
+    // });
+    const script = document.createElement('script');
+    script.src = "https://unpkg.com/@googlemaps/markerclusterer/dist/index.min.js";
+    script.async = true;
+    document.body.appendChild(script);
+    return () => {
+      document.body.removeChild(script);
+    }
+  }, []);
+
+  useEffect(() => {
+    async function fetchRestaurantList() {
+      const response = await client.get('/list', {
+        params: {
+          business_name: state.inputRestaurant,
+          latitude: userCurrPosition.latitude,
+          longitude: userCurrPosition.longitude,
+          radius: 100000
+        }
+      });
+    }
+    if(state !== null && 'inputRestaurant' in state) {
+      fetchRestaurantList();
+    }
+  }, [state, userCurrPosition]);
+
+  const mapApiIsLoaded = (map, maps) => {
+    const infoWindow = new maps.InfoWindow({
+      content: "",
+      disableAutoPan: true,
+    });
+    // Create an array of alphabetical characters used to label the markers.
+    const labels = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    // Add some markers to the map.
+    const markers = locations.map((position, i) => {
+      const label = labels[i % labels.length];
+      const marker = new maps.Marker({
+        position,
+        label,
+      });
+
+      // markers can only be keyboard focusable when they have click listeners
+      // open info window when marker is clicked
+      marker.addListener("click", () => {
+        infoWindow.setContent(label);
+        infoWindow.open(map, marker);
+      });
+      return marker;
+    });
+
+    // Add a marker clusterer to manage the markers.
+    new window.markerClusterer.MarkerClusterer({ markers, map });
+  };  
 
   return (
     <>
       <Helmet>
         <title> Dashboard | Minimal UI </title>
       </Helmet>
+
+      <GoogleMapReact
+        bootstrapURLKeys={{
+          key: 'AIzaSyD_7nejf5R7RW9oJi55Y8Cu_LDr_picFxY',
+          language: 'en', }}
+        defaultZoom={10}
+        defaultCenter={[39.9, -75.2]}
+        yesIWantToUseGoogleMapApiInternals
+        onGoogleApiLoaded={({ map, maps }) => mapApiIsLoaded(map, maps)}
+      />
 
       <Container maxWidth="xl">
         <Typography variant="h4" sx={{ mb: 5 }}>

@@ -44,22 +44,7 @@ Header.propTypes = {
 };
 
 export default function Header({ onOpenNav }) {
-  const [userCurrPosition, setUserCurrPosition] = useState({
-    latitude: 39.9,
-    longitude: -75.2
-  });
   const [restaurantList, setRestaurantList] = useState([]);
-
-  // useEffect(() => {
-  //   navigator.geolocation.getCurrentPosition((pos) => {
-  //     if(pos !== undefined) {
-  //       setUserCurrPosition({
-  //         latitude: pos.coords.latitude,
-  //         longitude: pos.coords.longitude
-  //       });
-  //     }
-  //   });
-  // }, []);
 
   const getSearchSuggestListItems = () => {
     return restaurantList.map(item => (
@@ -86,10 +71,7 @@ export default function Header({ onOpenNav }) {
           <Iconify icon="eva:menu-2-fill" />
         </IconButton>
 
-        <Searchbar
-          userCurrPosition={userCurrPosition}
-          setRestaurantList={setRestaurantList}
-        />
+        <Searchbar setRestaurantList={setRestaurantList}/>
         <Box sx={{ flexGrow: 1 }} />
 
         <Stack

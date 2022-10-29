@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 // @mui
 import { styled } from '@mui/material/styles';
 import { Input, Slide, Button, IconButton, InputAdornment, ClickAwayListener } from '@mui/material';
@@ -33,13 +34,29 @@ const StyledSearchbar = styled('div')(({ theme }) => ({
 
 // ----------------------------------------------------------------------
 
-export default function Searchbar({ userCurrPosition, setRestaurantList }) {
+export default function Searchbar({ setRestaurantList }) {
+  const [open, setOpen] = useState(false);
+  const [inputRestaurant, setInputRestaurant] = useState('');
+  const [userCurrPosition, setUserCurrPosition] = useState({
+    latitude: 39.9,
+    longitude: -75.2
+  });
+
+  const navigate = useNavigate();
   const client = axios.create({
     baseURL: "http://localhost:5000/restaurant" 
   });
 
-  const [open, setOpen] = useState(false);
-  const [inputRestaurant, setInputRestaurant] = useState('');
+  // useEffect(() => {
+  //   navigator.geolocation.getCurrentPosition((pos) => {
+  //     if(pos !== undefined) {
+  //       setUserCurrPosition({
+  //         latitude: pos.coords.latitude,
+  //         longitude: pos.coords.longitude
+  //       });
+  //     }
+  //   });
+  // }, []);
 
   useEffect(() => {
     async function fetchRestaurantList() {
@@ -71,6 +88,13 @@ export default function Searchbar({ userCurrPosition, setRestaurantList }) {
     setOpen(false);
   };
 
+  const handleSearch = () => {
+    const navState = {inputRestaurant};
+    setInputRestaurant('');
+    setOpen(false);
+    navigate('/dashboard/app', { replace: true, state: navState });
+  };
+
   return (
     <ClickAwayListener onClickAway={handleClose}>
       <div>
@@ -94,7 +118,7 @@ export default function Searchbar({ userCurrPosition, setRestaurantList }) {
               sx={{ mr: 1, fontWeight: 'fontWeightBold' }}
               onChange={(e) => setInputRestaurant(e.target.value)}
             />
-            <Button variant="contained" onClick={handleClose}>
+            <Button variant="contained" onClick={handleSearch}>
               Search
             </Button>
           </StyledSearchbar>
