@@ -1,6 +1,6 @@
 /* eslint-disable */
 import axios from 'axios';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { faker } from '@faker-js/faker';
@@ -30,6 +30,10 @@ export default function DashboardAppPage() {
     latitude: 39.9,
     longitude: -75.2
   });
+  const mapsApi = useRef(null);
+  const mapInstance = useRef(null);
+  const mapInfoWindow = useRef(null);
+  const markerClusterer = useRef(null);
 
   const theme = useTheme();
   const { state } = useLocation();
@@ -82,33 +86,26 @@ export default function DashboardAppPage() {
     }
   }, []);
 
-  useEffect(() => {
-    async function fetchRestaurantList() {
-      const response = await client.get('/list', {
-        params: {
-          business_name: state.inputRestaurant,
-          latitude: userCurrPosition.latitude,
-          longitude: userCurrPosition.longitude,
-          radius: 100000
-        }
-      });
-    }
-    if(state !== null && 'inputRestaurant' in state) {
-      fetchRestaurantList();
-    }
-  }, [state, userCurrPosition]);
-
-  const mapApiIsLoaded = (map, maps) => {
-    const infoWindow = new maps.InfoWindow({
-      content: "",
-      disableAutoPan: true,
+  const fetchRestaurantList = () => {
+    return client.get('/list', {
+      params: {
+        business_name: state.inputRestaurant,
+        latitude: userCurrPosition.latitude,
+        longitude: userCurrPosition.longitude,
+        radius: 100000
+      }
     });
+  };
+
+  const addRestaurantMarkers = (businessList) => {
     // Create an array of alphabetical characters used to label the markers.
     const labels = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
     // Add some markers to the map.
-    const markers = locations.map((position, i) => {
+    const markers = businessList.map((business, i) => {
       const label = labels[i % labels.length];
-      const marker = new maps.Marker({
+      const position = { lat: business.latitude, lng: business.longitude };
+      const marker = new mapsApi.current.Marker({
         position,
         label,
       });
@@ -116,28 +113,58 @@ export default function DashboardAppPage() {
       // markers can only be keyboard focusable when they have click listeners
       // open info window when marker is clicked
       marker.addListener("click", () => {
-        infoWindow.setContent(label);
-        infoWindow.open(map, marker);
+        mapInfoWindow.current.setContent("JESUS");
+        mapInfoWindow.current.open(mapInstance.current, marker);
       });
       return marker;
     });
 
+    markerClusterer.current.addMarkers(markers, true);
+  };
+
+  useEffect(() => {
+    if(mapsApi.current !== null &&
+       mapInstance.current !== null &&
+       mapInfoWindow.current !== null &&
+       markerClusterer.current !== null) {
+      console.log("useEffect executed");
+      markerClusterer.current.clearMarkers(true);
+      if(state !== null && 'inputRestaurant' in state) {
+        (async () => {
+          const fetchedData = await fetchRestaurantList();
+          addRestaurantMarkers(fetchedData.data.businessList);
+        })()
+      }
+    }
+  }, [
+    state,
+    userCurrPosition
+  ]);
+
+  const mapApiIsLoaded = (map, maps) => {
+    mapsApi.current = maps;
+    mapInstance.current = map;
+    mapInfoWindow.current = new maps.InfoWindow({
+      content: "",
+      disableAutoPan: true,
+    });
     // Add a marker clusterer to manage the markers.
-    new window.markerClusterer.MarkerClusterer({ markers, map });
-  };  
+    const markers = [];
+    markerClusterer.current = new window.markerClusterer.MarkerClusterer({markers, map});
+  };
 
   return (
     <>
       <Helmet>
         <title> Dashboard | Minimal UI </title>
       </Helmet>
-
+      
       <GoogleMapReact
         bootstrapURLKeys={{
           key: 'AIzaSyD_7nejf5R7RW9oJi55Y8Cu_LDr_picFxY',
           language: 'en', }}
         defaultZoom={10}
-        defaultCenter={[39.9, -75.2]}
+        defaultCenter={[userCurrPosition.latitude, userCurrPosition.longitude]}
         yesIWantToUseGoogleMapApiInternals
         onGoogleApiLoaded={({ map, maps }) => mapApiIsLoaded(map, maps)}
       />
