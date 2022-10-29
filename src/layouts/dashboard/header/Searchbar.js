@@ -67,7 +67,7 @@ export default function Searchbar({ userCurrPosition, setRestaurantList }) {
   };
 
   const handleClose = () => {
-    setRestaurantList([]);
+    setInputRestaurant('');
     setOpen(false);
   };
 
