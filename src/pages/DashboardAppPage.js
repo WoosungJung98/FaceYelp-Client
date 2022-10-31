@@ -65,7 +65,7 @@ export default function DashboardAppPage() {
   ];
 
   const client = axios.create({
-    baseURL: "http://localhost:5000/restaurant" 
+    baseURL: "http://18.210.174.179:8080/restaurant"
   });
 
   useEffect(() => {
