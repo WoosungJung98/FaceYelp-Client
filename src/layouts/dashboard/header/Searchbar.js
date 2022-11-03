@@ -44,7 +44,7 @@ export default function Searchbar({ setRestaurantList }) {
 
   const navigate = useNavigate();
   const client = axios.create({
-    baseURL: "http://18.210.174.179:8080/restaurant" 
+    baseURL: "http://44.207.81.97/api/restaurant" 
   });
 
   // useEffect(() => {
