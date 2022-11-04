@@ -65,7 +65,7 @@ export default function DashboardAppPage() {
   ];
 
   const client = axios.create({
-    baseURL: "http://44.207.81.97/api/restaurant"
+    baseURL: "https://faceyelp.com/api/restaurant"
   });
 
   useEffect(() => {
