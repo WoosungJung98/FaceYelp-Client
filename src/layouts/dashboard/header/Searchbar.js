@@ -8,6 +8,7 @@ import { Input, Slide, Button, IconButton, InputAdornment, ClickAwayListener } f
 import { bgBlur } from '../../../utils/cssStyles';
 // component
 import Iconify from '../../../components/iconify';
+import { callWithToken } from '../../../common/helpers/utils/common'
 
 // ----------------------------------------------------------------------
 
@@ -89,6 +90,13 @@ export default function Searchbar({ setRestaurantList }) {
   };
 
   const handleSearch = () => {
+    // temp code below
+    callWithToken('get', `https://faceyelp.com/api/restaurant/sCPx4Sy4I1wMeZwsTzCFRg/info`, {})
+    .then((response) => {
+      console.log("Jesus");
+      console.log(response);
+    })
+    // temp code above
     const navState = {inputRestaurant};
     setInputRestaurant('');
     setOpen(false);
