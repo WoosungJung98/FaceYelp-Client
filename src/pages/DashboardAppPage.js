@@ -88,7 +88,7 @@ export default function DashboardAppPage() {
       // markers can only be keyboard focusable when they have click listeners
       // open info window when marker is clicked
       marker.addListener("click", () => {
-        mapInfoWindow.current.setContent(`<a href="http://localhost:3000/restaurant/${business.businessID}" target="_blank" rel="noopener noreferrer">${state.inputRestaurant}</a>`);
+        mapInfoWindow.current.setContent(`<a href="http://localhost:3000/restaurant/${business.businessID}" target="_blank" rel="noopener noreferrer">${business.businessName}</a>`);
         mapInfoWindow.current.open(mapInstance.current, marker);
       });
       return marker;
@@ -127,7 +127,7 @@ export default function DashboardAppPage() {
   return (
     <>
       <Helmet>
-        <title> Dashboard | Minimal UI </title>
+        <title> Dashboard </title>
       </Helmet>
       <div style={{ height: '60vh', width: '100%', float:"left",  paddingLeft: "30px", paddingRight:"30px" }}>
       <GoogleMapReact

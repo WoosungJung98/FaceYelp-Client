@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import axios from 'axios';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 // @mui
 import { Link, Stack, IconButton, InputAdornment, TextField, Checkbox } from '@mui/material';
@@ -10,21 +11,43 @@ import Iconify from '../../../components/iconify';
 
 export default function LoginForm() {
   const navigate = useNavigate();
-
+  const inputEmail = useRef("");
+  const inputPassword = useRef("");
   const [showPassword, setShowPassword] = useState(false);
+  const client = axios.create({
+    baseURL: "https://faceyelp.com/api/user"
+  });
+  const handleClick = async () => {
+    console.log(inputEmail);
+    console.log(inputPassword);
 
-  const handleClick = () => {
+    const response = await client.post('/login', 
+    {email: inputEmail, password: inputPassword})
+    .then((response) => {
+      console.log(response);
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+
     navigate('/dashboard', { replace: true });
   };
 
+  function emailOnChange(input) {
+    inputEmail.current = input;
+  }
+
+  function passwordOnChange(input){
+    inputPassword.current = input;
+  }
   return (
     <>
       <Stack spacing={3}>
-        <TextField name="email" label="Email address" />
-
+        <TextField name="email" label="Email address" onChange={(event) => emailOnChange(event.target.value)} />
         <TextField
           name="password"
           label="Password"
+          onChange={(event) => passwordOnChange(event.target.value)}
           type={showPassword ? 'text' : 'password'}
           InputProps={{
             endAdornment: (

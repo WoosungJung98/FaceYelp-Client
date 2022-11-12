@@ -3,7 +3,7 @@ import _ from 'lodash'
 
 const isBrowser = typeof window !== 'undefined'
 
-export const setCookie = (key, value) => {
+export const setCookie = (key, value) => { // accessToken , refreshToken for the key, value should be token
   if (isBrowser) {
     cookie.set(key, value, {
       expires: 1,
