@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 // @mui
 import { styled } from '@mui/material/styles';
 import { Box, Stack, AppBar, Toolbar, IconButton, List, ListItem, ListItemButton, ListItemText } from '@mui/material';
@@ -49,8 +49,8 @@ export default function Header({ onOpenNav }) {
   const getSearchSuggestListItems = () => {
     return restaurantList.map(item => (
       <ListItem disablePadding key={item.businessID}>
-        <ListItemButton>
-          <ListItemText primary={item.businessName} secondary={item.address} />
+        <ListItemButton onClick={()=>{window.open(`http://localhost:3000/restaurant/${item.businessID}`, '_blank');}}>
+        <ListItemText primary={item.businessName} secondary={item.address} />
           <ListItemText primary={`${(item.distance * 0.000621371).toFixed(1)} mi`} />
         </ListItemButton>
       </ListItem>

@@ -1,7 +1,7 @@
 /* eslint-disable */
 import axios from 'axios';
 import { useState, useEffect, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { faker } from '@faker-js/faker';
 import GoogleMapReact from 'google-map-react';
@@ -22,7 +22,7 @@ import {
   AppCurrentSubject,
   AppConversionRates,
 } from '../sections/@dashboard/app';
-
+// import { useNavigate } from 'react-router-dom';
 // ----------------------------------------------------------------------
 
 export default function DashboardAppPage() {
@@ -30,6 +30,7 @@ export default function DashboardAppPage() {
     latitude: 39.9,
     longitude: -75.2
   });
+  // const navigate = useNavigate();
   const mapsApi = useRef(null);
   const mapInstance = useRef(null);
   const mapInfoWindow = useRef(null);
@@ -37,32 +38,6 @@ export default function DashboardAppPage() {
 
   const theme = useTheme();
   const { state } = useLocation();
-
-  const locations = [
-    { lat: -31.56391, lng: 147.154312, key: 'asdf0' },
-    { lat: -33.718234, lng: 150.363181, key: 'asdf1' },
-    { lat: -33.727111, lng: 150.371124, key: 'asdf2' },
-    { lat: -33.848588, lng: 151.209834, key: 'asdf3' },
-    { lat: -33.851702, lng: 151.216968, key: 'asdf4' },
-    { lat: -34.671264, lng: 150.863657, key: 'asdf5' },
-    { lat: -35.304724, lng: 148.662905, key: 'asdf6' },
-    { lat: -36.817685, lng: 175.699196, key: 'asdf7' },
-    { lat: -36.828611, lng: 175.790222, key: 'asdf8' },
-    { lat: -37.75, lng: 145.116667, key: 'asdf9' },
-    { lat: -37.759859, lng: 145.128708, key: 'asdf10' },
-    { lat: -37.765015, lng: 145.133858, key: 'asdf11' },
-    { lat: -37.770104, lng: 145.143299, key: 'asdf12' },
-    { lat: -37.7737, lng: 145.145187, key: 'asdf13' },
-    { lat: -37.774785, lng: 145.137978, key: 'asdf14' },
-    { lat: -37.819616, lng: 144.968119, key: 'asdf15' },
-    { lat: -38.330766, lng: 144.695692, key: 'asdf16' },
-    { lat: -39.927193, lng: 175.053218, key: 'asdf17' },
-    { lat: -41.330162, lng: 174.865694, key: 'asdf18' },
-    { lat: -42.734358, lng: 147.439506, key: 'asdf19' },
-    { lat: -42.734358, lng: 147.501315, key: 'asdf20' },
-    { lat: -42.735258, lng: 147.438, key: 'asdf21' },
-    { lat: -43.999792, lng: 170.463352, key: 'asdf22' },
-  ];
 
   const client = axios.create({
     baseURL: "https://faceyelp.com/api/restaurant"
@@ -113,7 +88,7 @@ export default function DashboardAppPage() {
       // markers can only be keyboard focusable when they have click listeners
       // open info window when marker is clicked
       marker.addListener("click", () => {
-        mapInfoWindow.current.setContent(business.businessName);
+        mapInfoWindow.current.setContent(`<a href="http://localhost:3000/restaurant/${business.businessID}" target="_blank" rel="noopener noreferrer">${state.inputRestaurant}</a>`);
         mapInfoWindow.current.open(mapInstance.current, marker);
       });
       return marker;
@@ -154,7 +129,7 @@ export default function DashboardAppPage() {
       <Helmet>
         <title> Dashboard | Minimal UI </title>
       </Helmet>
-      
+      <div style={{ height: '60vh', width: '100%', float:"left",  paddingLeft: "30px", paddingRight:"30px" }}>
       <GoogleMapReact
         bootstrapURLKeys={{
           key: 'AIzaSyD_7nejf5R7RW9oJi55Y8Cu_LDr_picFxY',
@@ -164,6 +139,7 @@ export default function DashboardAppPage() {
         yesIWantToUseGoogleMapApiInternals
         onGoogleApiLoaded={({ map, maps }) => mapApiIsLoaded(map, maps)}
       />
+      </div>
 
       <Container maxWidth="xl">
         <Typography variant="h4" sx={{ mb: 5 }}>

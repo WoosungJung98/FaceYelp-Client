@@ -1,7 +1,8 @@
 import axios from 'axios';
 import { Helmet } from 'react-helmet-async';
+import { useParams } from 'react-router-dom';
 import { Grid} from '@mui/material';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import * as React from 'react';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
@@ -19,12 +20,10 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import Chip from '@mui/material/Chip'
 import Rating from '@mui/material/Rating'
-import ReactDOM from "react-dom";
 import { Divider, Avatar} from "@material-ui/core";
-
 // ----------------------------------------------------------------------
-
 export default function BlogPage() {
+  const { businessID } = useParams();
   const [restaurantInfo, setRestaurantInfo] = useState({
       "address": "empty",
       "businessID": "empty",
@@ -43,19 +42,27 @@ export default function BlogPage() {
       "state": "empty"
   });
 
+  const [images, setImages] = useState([]);
   const client = axios.create({
     baseURL: "https://faceyelp.com/api/restaurant"
   });
 
   useEffect(() => {
     async function fetchRestaurantInfo() {
-      const response = await client.get('/sCPx4Sy4I1wMeZwsTzCFRg/info', {});
+      const response = await client.get(`/${businessID}/info`, {});
       if('businessInfo' in response.data) {
         response.data.businessInfo.hours = objectMap(response.data.businessInfo.hours, hourMapFn);
         setRestaurantInfo(response.data.businessInfo);
       }
     }
+    async function fetchRestaurantPhotos() {
+      const responseImages = await client.get(`/${businessID}/photos`, {});
+      if ('businessPhotoList' in responseImages.data){
+        setImages(responseImages.data.businessPhotoList);
+      }
+    }
     fetchRestaurantInfo();
+    fetchRestaurantPhotos();
   }, []);
 
 // returns a new object with the values at each key mapped using mapFn(value)
@@ -68,11 +75,8 @@ const objectMap = (object, mapFn) => {
 }
 
 const hourMapFn = (value) => {
-  // console.log(value);
   let open = value?.split("-")[0]?.split(":");
-  // console.log(open);
   let close = value?.split("-")[1]?.split(":");
-  // console.log(close);
   if (value !== null){
     if (open[0] >= 12){
       if (open[0] > 12){
@@ -140,68 +144,10 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   },
 }));
 
-const imgLink = "https://www.chipotle.com/content/dam/chipotle/global/menu/meal-types/cmg-10001-burrito/web-desktop/lifestyle.jpg"
-
-const itemData = [
+const itemData = images.map((image)=>
 {
-  img: 'https://www.chipotle.com/content/dam/chipotle/global/menu/meal-types/cmg-10001-burrito/web-desktop/lifestyle.jpg',
-  title: 'burrito',
-  author: '@jesiccaromero',
-},
-{
-  img: 'https://images.unsplash.com/photo-1444418776041-9c7e33cc5a9c',
-  title: 'Coffee',
-  author: '@nolanissac',
-  cols: 2,
-},
-{
-  img: 'https://images.unsplash.com/photo-1533827432537-70133748f5c8',
-  title: 'Hats',
-  author: '@hjrc33',
-  cols: 2,
-},
-{
-  img: 'https://images.unsplash.com/photo-1558642452-9d2a7deb7f62',
-  title: 'Honey',
-  author: '@arwinneil',
-  rows: 2,
-  cols: 2,
-  featured: true,
-},
-{
-  img: 'https://images.unsplash.com/photo-1516802273409-68526ee1bdd6',
-  title: 'Basketball',
-  author: '@tjdragotta',
-},
-{
-  img: 'https://images.unsplash.com/photo-1518756131217-31eb79b20e8f',
-  title: 'Fern',
-  author: '@katie_wasserman',
-},
-{
-  img: 'https://images.unsplash.com/photo-1597645587822-e99fa5d45d25',
-  title: 'Mushrooms',
-  author: '@silverdalex',
-  rows: 2,
-  cols: 2,
-},
-{
-  img: 'https://images.unsplash.com/photo-1567306301408-9b74779a11af',
-  title: 'Tomato basil',
-  author: '@shelleypauls',
-},
-{
-  img: 'https://images.unsplash.com/photo-1471357674240-e1a485acb3e1',
-  title: 'Sea star',
-  author: '@peterlaster',
-},
-{
-  img: 'https://images.unsplash.com/photo-1589118949245-7d38baf380d6',
-  title: 'Bike',
-  author: '@southside_customs',
-  cols: 2,
-},
-];
+   return {img: `https://faceyelp.com/images/${image.photo_id}.jpg`}
+});
 
 const getGoogleMapLoc = () => {
   if(restaurantInfo.latitude !== null && restaurantInfo.longitude !== null) {
@@ -220,7 +166,6 @@ const getGoogleMapLoc = () => {
   return null;
 };
 
-
   return (
     <>
       <Helmet>
@@ -231,7 +176,6 @@ const getGoogleMapLoc = () => {
       {restaurantInfo.businessName}
     </h1>
     <div>
-
     {
       restaurantInfo.categories.map((categories) => (
         <div style={{padding:"2px", float:"left"}}>
@@ -240,12 +184,11 @@ const getGoogleMapLoc = () => {
         )
       ) 
     }
-
     </div>
       <Rating name="read-only" value={restaurantInfo.stars} readOnly />
     <div style={{width:"100%", float:"left", paddingLeft: "5px", paddingTop:"10px"}}>
     
-    Open: Closes at 10pm
+    Open: Closes at 10pm NEED TO CHANGE
 
     </div>
 
@@ -254,33 +197,34 @@ const getGoogleMapLoc = () => {
       <ImageListItem key="Subheader" cols={2}>
         <h1>Images</h1>
       </ImageListItem>
-      {itemData.map((item) => (
-        <ImageListItem key={item.img}>
-          <img
-            src={`${item.img}?w=248&fit=crop&auto=format`}
-            srcSet={`${item.img}?w=248&fit=crop&auto=format&dpr=2 2x`}
-            alt={item.title}
-            loading="lazy"
-          />
-          <ImageListItemBar
-            title={item.title}
-            subtitle={item.author}
-            actionIcon={
-              <IconButton
-                sx={{ color: 'rgba(255, 255, 255, 0.54)' }}
-                aria-label={`info about ${item.title}`}
-              >
-                <InfoIcon />
-              </IconButton>
-            }
-          />
-        </ImageListItem>
-      ))}
+      {itemData.map((item) => {
+        return (
+          <ImageListItem key={item.img}>
+            <img
+              src={`${item.img}?w=248&fit=crop&auto=format`}
+              srcSet={`${item.img}?w=248&fit=crop&auto=format&dpr=2 2x`}
+              alt={item.title}
+              loading="lazy"
+            />
+            <ImageListItemBar
+              title={item.title}
+              subtitle={item.author}
+              actionIcon={
+                <IconButton
+                  sx={{ color: 'rgba(255, 255, 255, 0.54)' }}
+                  aria-label={`info about ${item.title}`}
+                >
+                  <InfoIcon />
+                </IconButton>
+              }
+            />
+          </ImageListItem>
+        );
+      })}
     </ImageList>
     </div>
     
       <div style={{ padding: "30px",}} >
-
         <div style={{ height: '40vh', width: '50%', float:"left",  paddingLeft: "30px", paddingRight:"30px" }} >
           {getGoogleMapLoc()}
           </div>
@@ -348,7 +292,7 @@ const getGoogleMapLoc = () => {
       <Paper style={{ padding: "40px 20px" }}>
         <Grid container wrap="nowrap" spacing={2}>
           <Grid item>
-            <Avatar alt="Remy Sharp" src={imgLink} />
+            <Avatar alt="Remy Sharp"/> 
           </Grid>
           <Grid justifyContent="left" item xs zeroMinWidth>
             <div>
@@ -366,7 +310,7 @@ const getGoogleMapLoc = () => {
         <Divider variant="fullWidth" style={{ margin: "30px 0" }} />
         <Grid container wrap="nowrap" spacing={2}>
           <Grid item>
-            <Avatar alt="Remy Sharp" src={imgLink} />
+            <Avatar alt="Remy Sharp" />
           </Grid>
           <Grid justifyContent="left" item xs zeroMinWidth>
             <div>
@@ -384,7 +328,7 @@ const getGoogleMapLoc = () => {
         <Divider variant="fullWidth" style={{ margin: "30px 0" }} />
         <Grid container wrap="nowrap" spacing={2}>
           <Grid item>
-            <Avatar alt="Remy Sharp" src={imgLink} />
+            <Avatar alt="Remy Sharp" />
           </Grid>
           <Grid justifyContent="left" item xs zeroMinWidth>
             <div>
@@ -402,7 +346,6 @@ const getGoogleMapLoc = () => {
         </Paper>
     </div>
     </div>
-
     </>
   );
 }
