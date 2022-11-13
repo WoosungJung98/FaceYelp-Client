@@ -8,7 +8,7 @@ import { Input, Slide, Button, IconButton, InputAdornment, ClickAwayListener } f
 import { bgBlur } from '../../../utils/cssStyles';
 // component
 import Iconify from '../../../components/iconify';
-import { callWithToken } from '../../../common/helpers/utils/common'
+import { callWithToken } from '../../../common/helpers/utils/common';
 
 // ----------------------------------------------------------------------
 
