@@ -6,6 +6,7 @@ import { Link, Stack, IconButton, InputAdornment, TextField, Checkbox } from '@m
 import { LoadingButton } from '@mui/lab';
 // components
 import Iconify from '../../../components/iconify';
+// import HOSTNAME from '../config.default'
 
 // ----------------------------------------------------------------------
 
@@ -15,14 +16,13 @@ export default function LoginForm() {
   const inputPassword = useRef("");
   const [showPassword, setShowPassword] = useState(false);
   const client = axios.create({
-    baseURL: "https://faceyelp.com/api/user"
+    baseURL: `https://faceyelp.com/api/user`
   });
   const handleClick = async () => {
-    console.log(inputEmail);
-    console.log(inputPassword);
-
+    console.log(inputEmail.current);
+    console.log(inputPassword.current);
     const response = await client.post('/login', 
-    {email: inputEmail, password: inputPassword})
+    {email: inputEmail.current, password: inputPassword.current})
     .then((response) => {
       console.log(response);
     })

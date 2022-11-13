@@ -21,6 +21,7 @@ import Paper from '@mui/material/Paper';
 import Chip from '@mui/material/Chip'
 import Rating from '@mui/material/Rating'
 import { Divider, Avatar} from "@material-ui/core";
+// import HOSTNAME from '../config.default'
 // ----------------------------------------------------------------------
 export default function BlogPage() {
   const { businessID } = useParams();
@@ -44,7 +45,7 @@ export default function BlogPage() {
 
   const [restaurantImages, setRestaurantImages] = useState([]);
   const client = axios.create({
-    baseURL: "https://faceyelp.com/api/restaurant"
+    baseURL: `https://faceyelp.com/api/restaurant`
   });
 
   useEffect(() => {

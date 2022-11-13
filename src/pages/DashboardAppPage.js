@@ -22,7 +22,7 @@ import {
   AppCurrentSubject,
   AppConversionRates,
 } from '../sections/@dashboard/app';
-import HOSTNAME from '../config';
+// import HOSTNAME from '../config';
 
 // ----------------------------------------------------------------------
 
@@ -40,7 +40,7 @@ export default function DashboardAppPage() {
   const { state } = useLocation();
 
   const client = axios.create({
-    baseURL: "https://faceyelp.com/api/restaurant"
+    baseURL: `https://faceyelp.com/api/restaurant`
   });
 
   useEffect(() => {
@@ -88,7 +88,7 @@ export default function DashboardAppPage() {
       // markers can only be keyboard focusable when they have click listeners
       // open info window when marker is clicked
       marker.addListener("click", () => {
-        mapInfoWindow.current.setContent(`<a href="${HOSTNAME}/restaurant/${business.businessID}" target="_blank" rel="noopener noreferrer">${business.businessName}</a>`);
+        mapInfoWindow.current.setContent(`<a href="https://faceyelp.com/restaurant/${business.businessID}" target="_blank" rel="noopener noreferrer">${business.businessName}</a>`);
         mapInfoWindow.current.open(mapInstance.current, marker);
       });
       return marker;
