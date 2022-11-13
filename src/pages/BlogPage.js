@@ -1,3 +1,4 @@
+import HOSTNAME from '../config.jsx';
 import axios from 'axios';
 import { Helmet } from 'react-helmet-async';
 import { useParams } from 'react-router-dom';
