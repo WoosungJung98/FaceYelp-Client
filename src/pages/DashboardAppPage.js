@@ -1,7 +1,7 @@
 /* eslint-disable */
 import axios from 'axios';
 import { useState, useEffect, useRef } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { faker } from '@faker-js/faker';
 import GoogleMapReact from 'google-map-react';
@@ -22,7 +22,8 @@ import {
   AppCurrentSubject,
   AppConversionRates,
 } from '../sections/@dashboard/app';
-// import { useNavigate } from 'react-router-dom';
+import HOSTNAME from '../config';
+
 // ----------------------------------------------------------------------
 
 export default function DashboardAppPage() {
@@ -30,7 +31,6 @@ export default function DashboardAppPage() {
     latitude: 39.9,
     longitude: -75.2
   });
-  // const navigate = useNavigate();
   const mapsApi = useRef(null);
   const mapInstance = useRef(null);
   const mapInfoWindow = useRef(null);
@@ -88,7 +88,7 @@ export default function DashboardAppPage() {
       // markers can only be keyboard focusable when they have click listeners
       // open info window when marker is clicked
       marker.addListener("click", () => {
-        mapInfoWindow.current.setContent(`<a href="http://localhost:3000/restaurant/${business.businessID}" target="_blank" rel="noopener noreferrer">${business.businessName}</a>`);
+        mapInfoWindow.current.setContent(`<a href="${HOSTNAME}/restaurant/${business.businessID}" target="_blank" rel="noopener noreferrer">${business.businessName}</a>`);
         mapInfoWindow.current.open(mapInstance.current, marker);
       });
       return marker;
