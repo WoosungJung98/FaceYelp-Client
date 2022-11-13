@@ -12,6 +12,8 @@ import Searchbar from './Searchbar';
 import AccountPopover from './AccountPopover';
 import LanguagePopover from './LanguagePopover';
 import NotificationsPopover from './NotificationsPopover';
+import HOSTNAME from '../../../config';
+
 // ----------------------------------------------------------------------
 
 const NAV_WIDTH = 280;
@@ -48,7 +50,7 @@ export default function Header({ onOpenNav }) {
   const getSearchSuggestListItems = () => {
     return restaurantList.map(item => (
       <ListItem disablePadding key={item.businessID}>
-        <ListItemButton onClick={()=>{window.open(`http://localhost:3000/restaurant/${item.businessID}`, '_blank');}}>
+        <ListItemButton onClick={()=>{window.open(`${HOSTNAME}/restaurant/${item.businessID}`, '_blank');}}>
         <ListItemText primary={item.businessName} secondary={item.address} />
           <ListItemText primary={`${(item.distance * 0.000621371).toFixed(1)} mi`} />
         </ListItemButton>
