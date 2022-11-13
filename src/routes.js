@@ -39,13 +39,13 @@ export default function Router() {
             <ProductsPage />
           </Suspense>
         )},
-        { path: 'blog', element: (
-          <Suspense fallback={<>...</>}>
-            <BlogPage />
-          </Suspense>
-        )},
       ],
     },
+    { path: 'restaurant/:businessID', element: (
+      <Suspense fallback={<>...</>}>
+        <BlogPage />
+      </Suspense>
+    )},
     {
       path: 'login',
       element: (

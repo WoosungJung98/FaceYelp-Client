@@ -1,10 +1,12 @@
+import axios from 'axios';
 import { Helmet } from 'react-helmet-async';
-import { Grid, Button, Container, Stack, Typography } from '@mui/material';
+import { useParams } from 'react-router-dom';
+import { Grid} from '@mui/material';
+import { useState, useEffect } from 'react';
 import * as React from 'react';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
 import ImageListItemBar from '@mui/material/ImageListItemBar';
-import ListSubheader from '@mui/material/ListSubheader';
 import IconButton from '@mui/material/IconButton';
 import InfoIcon from '@mui/icons-material/Info';
 import GoogleMapReact from 'google-map-react';
@@ -18,22 +20,102 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import Chip from '@mui/material/Chip'
 import Rating from '@mui/material/Rating'
-import ReactDOM from "react-dom";
 import { Divider, Avatar} from "@material-ui/core";
-
-
-import Iconify from '../components/iconify';
-import {BlogPostCard, BlogPostsSort, BlogPostsSearch } from '../sections/@dashboard/blog';
-
-import POSTS from '../_mock/blog';
 // ----------------------------------------------------------------------
-
 export default function BlogPage() {
+  const { businessID } = useParams();
+  const [restaurantInfo, setRestaurantInfo] = useState({
+      "address": "empty",
+      "businessID": "empty",
+      "businessName": "empty",
+      "categories": [
+        "empty"
+      ],
+      "city": "empty",
+      "hours": null,
+      "isOpen": null,
+      "latitude": null,
+      "longitude": null,
+      "postalCode": "empty",
+      "reviewCount": null,
+      "stars": null,
+      "state": "empty"
+  });
 
-// ----------------------------------------------------------------------
+  const [images, setImages] = useState([]);
+  const client = axios.create({
+    baseURL: "https://faceyelp.com/api/restaurant"
+  });
+
+  useEffect(() => {
+    async function fetchRestaurantInfo() {
+      const response = await client.get(`/${businessID}/info`, {});
+      if('businessInfo' in response.data) {
+        response.data.businessInfo.hours = objectMap(response.data.businessInfo.hours, hourMapFn);
+        setRestaurantInfo(response.data.businessInfo);
+      }
+    }
+    async function fetchRestaurantPhotos() {
+      const responseImages = await client.get(`/${businessID}/photos`, {});
+      if ('businessPhotoList' in responseImages.data){
+        setImages(responseImages.data.businessPhotoList);
+      }
+    }
+    fetchRestaurantInfo();
+    fetchRestaurantPhotos();
+  }, []);
+
+// returns a new object with the values at each key mapped using mapFn(value)
+const objectMap = (object, mapFn) => {
+  return Object.keys(object).reduce((result, key) => {
+
+    result[key] = mapFn(object[key])
+    return result
+  }, {})
+}
+
+const hourMapFn = (value) => {
+  let open = value?.split("-")[0]?.split(":");
+  let close = value?.split("-")[1]?.split(":");
+  if (value !== null){
+    if (open[0] >= 12){
+      if (open[0] > 12){
+        open[0] =- 12;
+      }
+      if (open[1].length === 1){
+        open[1] += "0";
+      }
+      open[1] += "pm" ;
+    }
+    else{
+      if (open[1].length === 1){
+        open[1] += "0";
+      }
+      open[1] += "am";
+    }
+    if (close[0] >= 12){
+      if (close[0] > 12){
+        close[0] =- 12;
+      }
+      if (close[1].length === 1){
+        close[1] += "0"
+      }
+      close[1] += "pm" ;
+    }
+    else{
+      if (close[1].length === 1){
+        close[1] += "0"
+      }
+      close[1] += "am";
+    }
+    open = open.join(":");
+    close = close.join(":");
+  }
+  return [open, close].join("-")
+}
+
 const location = 	
-{ lat: 39.920544, lng: -75.188066}
-
+{ lat: restaurantInfo.latitude, lng: restaurantInfo.longitude}
 
 const mapApiIsLoaded = (map, maps) => {
   new maps.Marker({
@@ -62,106 +144,51 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   },
 }));
 
-const imgLink = "https://www.chipotle.com/content/dam/chipotle/global/menu/meal-types/cmg-10001-burrito/web-desktop/lifestyle.jpg"
+const itemData = images.map((image)=>
+{
+   return {img: `https://faceyelp.com/images/${image.photo_id}.jpg`}
+});
 
-const itemData = [
-{
-  img: 'https://www.chipotle.com/content/dam/chipotle/global/menu/meal-types/cmg-10001-burrito/web-desktop/lifestyle.jpg',
-  title: 'burrito',
-  author: '@williamjung',
-  rows: 2,
-  cols: 2,
-  featured: true,
-},
-{
-  img: 'https://www.chipotle.com/content/dam/chipotle/global/menu/meal-types/cmg-10001-burrito/web-desktop/lifestyle.jpg',
-  title: 'burrito',
-  author: '@christianchoi',
-},
-{
-  img: 'https://www.chipotle.com/content/dam/chipotle/global/menu/meal-types/cmg-10001-burrito/web-desktop/lifestyle.jpg',
-  title: 'burrito',
-  author: '@jesiccaromero',
-},
-{
-  img: 'https://images.unsplash.com/photo-1444418776041-9c7e33cc5a9c',
-  title: 'Coffee',
-  author: '@nolanissac',
-  cols: 2,
-},
-{
-  img: 'https://images.unsplash.com/photo-1533827432537-70133748f5c8',
-  title: 'Hats',
-  author: '@hjrc33',
-  cols: 2,
-},
-{
-  img: 'https://images.unsplash.com/photo-1558642452-9d2a7deb7f62',
-  title: 'Honey',
-  author: '@arwinneil',
-  rows: 2,
-  cols: 2,
-  featured: true,
-},
-{
-  img: 'https://images.unsplash.com/photo-1516802273409-68526ee1bdd6',
-  title: 'Basketball',
-  author: '@tjdragotta',
-},
-{
-  img: 'https://images.unsplash.com/photo-1518756131217-31eb79b20e8f',
-  title: 'Fern',
-  author: '@katie_wasserman',
-},
-{
-  img: 'https://images.unsplash.com/photo-1597645587822-e99fa5d45d25',
-  title: 'Mushrooms',
-  author: '@silverdalex',
-  rows: 2,
-  cols: 2,
-},
-{
-  img: 'https://images.unsplash.com/photo-1567306301408-9b74779a11af',
-  title: 'Tomato basil',
-  author: '@shelleypauls',
-},
-{
-  img: 'https://images.unsplash.com/photo-1471357674240-e1a485acb3e1',
-  title: 'Sea star',
-  author: '@peterlaster',
-},
-{
-  img: 'https://images.unsplash.com/photo-1589118949245-7d38baf380d6',
-  title: 'Bike',
-  author: '@southside_customs',
-  cols: 2,
-},
-];
-
+const getGoogleMapLoc = () => {
+  if(restaurantInfo.latitude !== null && restaurantInfo.longitude !== null) {
+    return (
+      <GoogleMapReact
+        bootstrapURLKeys={{
+          key: 'AIzaSyD_7nejf5R7RW9oJi55Y8Cu_LDr_picFxY',
+          language: 'en', }}
+        defaultZoom={13}
+        defaultCenter={[restaurantInfo.latitude, restaurantInfo.longitude]}
+        yesIWantToUseGoogleMapApiInternals
+        onGoogleApiLoaded={({ map, maps }) => mapApiIsLoaded(map, maps)}
+      />
+    );
+  }
+  return null;
+};
 
   return (
     <>
       <Helmet>
-        <title> Chipotle Mexican Grill </title>
+        <title> {restaurantInfo.businessName} </title>
         
       </Helmet>
     <h1>
-      Chipotle Mexican Grill
+      {restaurantInfo.businessName}
     </h1>
     <div>
-      <div style={{padding:"2px", float:"left"}}>
-      <Chip label="Mexican" />
-      </div>
-      <div style={{padding:"2px", float:"left"}}>
-      <Chip label="Fast Food" />
-      </div>
-      <div style={{paddingTop:"5px"}}>
-      <Rating name="read-only" value={3} readOnly />
-      </div>
+    {
+      restaurantInfo.categories.map((categories) => (
+        <div style={{padding:"2px", float:"left"}}>
+          <Chip label={categories} />
+        </div>
+        )
+      ) 
+    }
     </div>
+      <Rating name="read-only" value={restaurantInfo.stars} readOnly />
     <div style={{width:"100%", float:"left", paddingLeft: "5px", paddingTop:"10px"}}>
     
-    Open: Closes at 10pm
+    Open: Closes at 10pm NEED TO CHANGE
 
     </div>
 
@@ -170,43 +197,36 @@ const itemData = [
       <ImageListItem key="Subheader" cols={2}>
         <h1>Images</h1>
       </ImageListItem>
-      {itemData.map((item) => (
-        <ImageListItem key={item.img}>
-          <img
-            src={`${item.img}?w=248&fit=crop&auto=format`}
-            srcSet={`${item.img}?w=248&fit=crop&auto=format&dpr=2 2x`}
-            alt={item.title}
-            loading="lazy"
-          />
-          <ImageListItemBar
-            title={item.title}
-            subtitle={item.author}
-            actionIcon={
-              <IconButton
-                sx={{ color: 'rgba(255, 255, 255, 0.54)' }}
-                aria-label={`info about ${item.title}`}
-              >
-                <InfoIcon />
-              </IconButton>
-            }
-          />
-        </ImageListItem>
-      ))}
+      {itemData.map((item) => {
+        return (
+          <ImageListItem key={item.img}>
+            <img
+              src={`${item.img}?w=248&fit=crop&auto=format`}
+              srcSet={`${item.img}?w=248&fit=crop&auto=format&dpr=2 2x`}
+              alt={item.title}
+              loading="lazy"
+            />
+            <ImageListItemBar
+              title={item.title}
+              subtitle={item.author}
+              actionIcon={
+                <IconButton
+                  sx={{ color: 'rgba(255, 255, 255, 0.54)' }}
+                  aria-label={`info about ${item.title}`}
+                >
+                  <InfoIcon />
+                </IconButton>
+              }
+            />
+          </ImageListItem>
+        );
+      })}
     </ImageList>
     </div>
     
       <div style={{ padding: "30px",}} >
-
         <div style={{ height: '40vh', width: '50%', float:"left",  paddingLeft: "30px", paddingRight:"30px" }} >
-        <GoogleMapReact
-            bootstrapURLKeys={{
-              key: 'AIzaSyD_7nejf5R7RW9oJi55Y8Cu_LDr_picFxY',
-              language: 'en', }}
-            defaultZoom={13}
-            defaultCenter={[39.920544, -75.188066]}
-            yesIWantToUseGoogleMapApiInternals
-            onGoogleApiLoaded={({ map, maps }) => mapApiIsLoaded(map, maps)}
-          />
+          {getGoogleMapLoc()}
           </div>
           <div style={{ height: '38vh', width: '50%', float:"right", margin:"auto", paddingLeft: "50px", paddingRight:"50px", paddingBottom:"30px"}}>
           <TableContainer component={Paper}>
@@ -222,43 +242,43 @@ const itemData = [
                   <StyledTableCell component="th" scope="row">
                     Monday
                   </StyledTableCell>
-                  <StyledTableCell align="left"> 6:00am-10:00pm</StyledTableCell>
+                  <StyledTableCell align="left"> {restaurantInfo.hours === null ? '...' : restaurantInfo.hours.mon}</StyledTableCell>
                 </StyledTableRow>
                 <StyledTableRow>
                   <StyledTableCell component="th" scope="row">
                     Tuesday
                   </StyledTableCell>
-                  <StyledTableCell align="left"> 6:00am-10:00pm</StyledTableCell>
+                  <StyledTableCell align="left">{restaurantInfo.hours === null ? '...' : restaurantInfo.hours.tues}</StyledTableCell>
                 </StyledTableRow>
                 <StyledTableRow>
                   <StyledTableCell component="th" scope="row">
                     Wednesday
                   </StyledTableCell>
-                  <StyledTableCell align="left"> 6:00am-10:00pm</StyledTableCell>
+                  <StyledTableCell align="left">{restaurantInfo.hours === null ? '...' : restaurantInfo.hours.wed}</StyledTableCell>
                 </StyledTableRow>
                 <StyledTableRow>
                   <StyledTableCell component="th" scope="row">
                     Thursday
                   </StyledTableCell>
-                  <StyledTableCell align="left"> 6:00am-10:00pm</StyledTableCell>
+                  <StyledTableCell align="left">{restaurantInfo.hours === null ? '...' : restaurantInfo.hours.thurs}</StyledTableCell>
                 </StyledTableRow>
                 <StyledTableRow>
                   <StyledTableCell component="th" scope="row">
                     Friday
                   </StyledTableCell>
-                  <StyledTableCell align="left"> 6:00am-10:00pm</StyledTableCell>
+                  <StyledTableCell align="left">{restaurantInfo.hours === null ? '...' : restaurantInfo.hours.fri}</StyledTableCell>
                 </StyledTableRow>
                 <StyledTableRow>
                   <StyledTableCell component="th" scope="row">
                     Saturday
                   </StyledTableCell>
-                  <StyledTableCell align="left"> 6:00am-10:00pm</StyledTableCell>
+                  <StyledTableCell align="left">{restaurantInfo.hours === null ? '...' : restaurantInfo.hours.sat}</StyledTableCell>
                 </StyledTableRow>
                 <StyledTableRow>
                   <StyledTableCell component="th" scope="row">
                     Sunday
                   </StyledTableCell>
-                  <StyledTableCell align="left"> 6:00am-10:00pm</StyledTableCell>
+                  <StyledTableCell align="left">{restaurantInfo.hours === null ? '...' : restaurantInfo.hours.sun}</StyledTableCell>
                 </StyledTableRow>
             </TableBody>
           </Table>
@@ -272,7 +292,7 @@ const itemData = [
       <Paper style={{ padding: "40px 20px" }}>
         <Grid container wrap="nowrap" spacing={2}>
           <Grid item>
-            <Avatar alt="Remy Sharp" src={imgLink} />
+            <Avatar alt="Remy Sharp"/> 
           </Grid>
           <Grid justifyContent="left" item xs zeroMinWidth>
             <div>
@@ -290,7 +310,7 @@ const itemData = [
         <Divider variant="fullWidth" style={{ margin: "30px 0" }} />
         <Grid container wrap="nowrap" spacing={2}>
           <Grid item>
-            <Avatar alt="Remy Sharp" src={imgLink} />
+            <Avatar alt="Remy Sharp" />
           </Grid>
           <Grid justifyContent="left" item xs zeroMinWidth>
             <div>
@@ -308,7 +328,7 @@ const itemData = [
         <Divider variant="fullWidth" style={{ margin: "30px 0" }} />
         <Grid container wrap="nowrap" spacing={2}>
           <Grid item>
-            <Avatar alt="Remy Sharp" src={imgLink} />
+            <Avatar alt="Remy Sharp" />
           </Grid>
           <Grid justifyContent="left" item xs zeroMinWidth>
             <div>
@@ -326,7 +346,6 @@ const itemData = [
         </Paper>
     </div>
     </div>
-
     </>
   );
 }
