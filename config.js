@@ -1,3 +1,3 @@
-const HOSTNAME = 'https://www.faceyelp.com/api'
+const HOSTNAME = 'https://www.faceyelp.com'
 
-export default HOSTNAME
+export default HOSTNAME;

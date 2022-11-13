@@ -12,7 +12,6 @@ import Searchbar from './Searchbar';
 import AccountPopover from './AccountPopover';
 import LanguagePopover from './LanguagePopover';
 import NotificationsPopover from './NotificationsPopover';
-
 // ----------------------------------------------------------------------
 
 const NAV_WIDTH = 280;
