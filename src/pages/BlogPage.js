@@ -4,6 +4,7 @@ import { useParams } from 'react-router-dom';
 import { Grid} from '@mui/material';
 import { useState, useEffect, useMemo } from 'react';
 import * as React from 'react';
+import Box from '@mui/material/Box';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
 import ImageListItemBar from '@mui/material/ImageListItemBar';
@@ -166,176 +167,226 @@ export default function BlogPage() {
         <img
           src={`${imgURL}?w=248&fit=crop&auto=format`}
           srcSet={`${imgURL}?w=248&fit=crop&auto=format&dpr=2 2x`}
-          alt="Unavailable"
+          alt={img.label}
           loading="lazy"
         />
-        <ImageListItemBar
-          title={img.caption}
-          subtitle={img.label}
-          actionIcon={
-            <IconButton
-              sx={{ color: 'rgba(255, 255, 255, 0.54)' }}
-              aria-label={`info about ${img.label}`}
-            >
-              <InfoIcon />
-            </IconButton>
-          }
-        />
+        {img.caption.length > 0 ? (<ImageListItemBar title={img.caption}/>) : null}
       </ImageListItem>
     );
   }), [restaurantImages]);
 
   return (
     <>
-      <Helmet>
-        <title> {restaurantInfo.businessName} </title>
-      </Helmet>
-    <h1>
-      {restaurantInfo.businessName}
-    </h1>
-    <div>
-      {
-        restaurantInfo.categories.map((category) => (
-          <div key={category} style={{padding:"2px", float:"left"}}>
-            <Chip label={category} />
-          </div>
-          )
-        ) 
-      }
-    </div>
-    <Rating name="read-only" value={restaurantInfo.stars} readOnly />
-    <div style={{width:"100%", float:"left", paddingLeft: "5px", paddingTop:"10px"}}>
+    <Helmet>
+      <title> {restaurantInfo.businessName} </title>
+    </Helmet>
+    <Box
+      sx={{
+        display: 'flex',
+        justifyContent: 'center',
+        p: 1,
+        m: 1,
+        bgcolor: '#F9FAFB',
+      }}
+    >
+      <h1>
+        {restaurantInfo.businessName}
+      </h1>
+    </Box>
+    <Box
+      sx={{
+        display: 'flex',
+        justifyContent: 'center',
+        p: 1,
+        m: 1,
+        bgcolor: '#F9FAFB',
+      }}
+    >
+      <div>
+        {
+          restaurantInfo.categories.map((category) => (
+            <div key={category} style={{padding:"2px", float:"left"}}>
+              <Chip label={category} />
+            </div>
+            )
+          ) 
+        }
+      </div>
+    </Box>
+    <Box
+      sx={{
+        display: 'flex',
+        justifyContent: 'center',
+        p: 1,
+        m: 1,
+        bgcolor: '#F9FAFB',
+      }}
+    >
+      <Rating name="read-only" value={restaurantInfo.stars} readOnly />
+    </Box>
+    {restaurantImages.length > 0 ? (
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          p: 2,
+          m: 1,
+          bgcolor: '#F9FAFB',
+        }}
+      >
+        <ImageList variant="woven" cols={3} gap={8} sx={{ width: '80%', height: 420}}>
+          {restaurantImageListItems}
+        </ImageList>
+      </Box>
+    ) : null}
+    {/* <div style={{width:"100%", float:"left", paddingLeft: "5px", paddingTop:"10px"}}>
       Open: Closes at 10pm NEED TO CHANGE
-    </div>
-    <div style={{}} >
-      <ImageList sx={{ width: 1100, height: 370, margin:"auto"}}>
-        <ImageListItem key="Subheader" cols={2}>
-          <h1>Images</h1>
-        </ImageListItem>
-        {restaurantImageListItems}
-      </ImageList>
-    </div>
-    <div style={{ padding: "30px",}} >
-      <div style={{ height: '40vh', width: '50%', float:"left",  paddingLeft: "30px", paddingRight:"30px" }} >
+    </div> */}
+    <Box
+      sx={{
+        display: 'flex',
+        justifyContent: 'center',
+        p: 2,
+        m: 1,
+        bgcolor: '#F9FAFB',
+      }}
+    >
+      <div style={{ height: '42vh', width: '50%', paddingRight:"30px" }} >
         {getGoogleMapLoc()}
-        </div>
-        <div style={{ height: '38vh', width: '50%', float:"right", margin:"auto", paddingLeft: "50px", paddingRight:"50px", paddingBottom:"30px"}}>
+      </div>
+      <div style={{ height: '38vh', width: '30%', paddingLeft: "30px" }}>
         <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 10 }} style={{alignSelf:"flex-end"}} aria-label="customized table" size="small">
-          <TableHead>
-            <TableRow>
-              <StyledTableCell> Days</StyledTableCell>
-              <StyledTableCell align="left">Hours</StyledTableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-              <StyledTableRow>
-                <StyledTableCell component="th" scope="row">
-                  Monday
-                </StyledTableCell>
-                <StyledTableCell align="left"> {restaurantInfo.hours === null ? '...' : restaurantInfo.hours.mon}</StyledTableCell>
-              </StyledTableRow>
-              <StyledTableRow>
-                <StyledTableCell component="th" scope="row">
-                  Tuesday
-                </StyledTableCell>
-                <StyledTableCell align="left">{restaurantInfo.hours === null ? '...' : restaurantInfo.hours.tues}</StyledTableCell>
-              </StyledTableRow>
-              <StyledTableRow>
-                <StyledTableCell component="th" scope="row">
-                  Wednesday
-                </StyledTableCell>
-                <StyledTableCell align="left">{restaurantInfo.hours === null ? '...' : restaurantInfo.hours.wed}</StyledTableCell>
-              </StyledTableRow>
-              <StyledTableRow>
-                <StyledTableCell component="th" scope="row">
-                  Thursday
-                </StyledTableCell>
-                <StyledTableCell align="left">{restaurantInfo.hours === null ? '...' : restaurantInfo.hours.thurs}</StyledTableCell>
-              </StyledTableRow>
-              <StyledTableRow>
-                <StyledTableCell component="th" scope="row">
-                  Friday
-                </StyledTableCell>
-                <StyledTableCell align="left">{restaurantInfo.hours === null ? '...' : restaurantInfo.hours.fri}</StyledTableCell>
-              </StyledTableRow>
-              <StyledTableRow>
-                <StyledTableCell component="th" scope="row">
-                  Saturday
-                </StyledTableCell>
-                <StyledTableCell align="left">{restaurantInfo.hours === null ? '...' : restaurantInfo.hours.sat}</StyledTableCell>
-              </StyledTableRow>
-              <StyledTableRow>
-                <StyledTableCell component="th" scope="row">
-                  Sunday
-                </StyledTableCell>
-                <StyledTableCell align="left">{restaurantInfo.hours === null ? '...' : restaurantInfo.hours.sun}</StyledTableCell>
-              </StyledTableRow>
-          </TableBody>
-        </Table>
-      </TableContainer>
+          <Table sx={{ minWidth: 10 }} style={{alignSelf:"flex-end"}} aria-label="customized table" size="small">
+            <TableHead>
+              <TableRow>
+                <StyledTableCell> Days</StyledTableCell>
+                <StyledTableCell align="left">Hours</StyledTableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+                <StyledTableRow>
+                  <StyledTableCell component="th" scope="row">
+                    Monday
+                  </StyledTableCell>
+                  <StyledTableCell align="left"> {restaurantInfo.hours === null ? '...' : restaurantInfo.hours.mon}</StyledTableCell>
+                </StyledTableRow>
+                <StyledTableRow>
+                  <StyledTableCell component="th" scope="row">
+                    Tuesday
+                  </StyledTableCell>
+                  <StyledTableCell align="left">{restaurantInfo.hours === null ? '...' : restaurantInfo.hours.tues}</StyledTableCell>
+                </StyledTableRow>
+                <StyledTableRow>
+                  <StyledTableCell component="th" scope="row">
+                    Wednesday
+                  </StyledTableCell>
+                  <StyledTableCell align="left">{restaurantInfo.hours === null ? '...' : restaurantInfo.hours.wed}</StyledTableCell>
+                </StyledTableRow>
+                <StyledTableRow>
+                  <StyledTableCell component="th" scope="row">
+                    Thursday
+                  </StyledTableCell>
+                  <StyledTableCell align="left">{restaurantInfo.hours === null ? '...' : restaurantInfo.hours.thurs}</StyledTableCell>
+                </StyledTableRow>
+                <StyledTableRow>
+                  <StyledTableCell component="th" scope="row">
+                    Friday
+                  </StyledTableCell>
+                  <StyledTableCell align="left">{restaurantInfo.hours === null ? '...' : restaurantInfo.hours.fri}</StyledTableCell>
+                </StyledTableRow>
+                <StyledTableRow>
+                  <StyledTableCell component="th" scope="row">
+                    Saturday
+                  </StyledTableCell>
+                  <StyledTableCell align="left">{restaurantInfo.hours === null ? '...' : restaurantInfo.hours.sat}</StyledTableCell>
+                </StyledTableRow>
+                <StyledTableRow>
+                  <StyledTableCell component="th" scope="row">
+                    Sunday
+                  </StyledTableCell>
+                  <StyledTableCell align="left">{restaurantInfo.hours === null ? '...' : restaurantInfo.hours.sun}</StyledTableCell>
+                </StyledTableRow>
+            </TableBody>
+          </Table>
+        </TableContainer>
       </div>
-    </div>
-    <div style={{paddingTop:250}}>
-      <h1>Reviews </h1>
-      <div style={{ padding: 14 }} className="App">
-        <Paper style={{ padding: "40px 20px" }}>
-          <Grid container wrap="nowrap" spacing={2}>
-            <Grid item>
-              <Avatar alt="Remy Sharp"/> 
-            </Grid>
-            <Grid justifyContent="left" item xs zeroMinWidth>
-              <div>
-              <h4 style={{ margin: 0, textAlign: "left" }}>@jessicaromero</h4>
-              <Rating name="read-only" value={3} readOnly />
-              </div>
-              <p style={{ textAlign: "left" }}>
-                my name is jessica{" "}
-              </p>
-              <p style={{ textAlign: "left", color: "gray" }}>
-                posted 1 minute ago
-              </p>
-            </Grid>
+    </Box>
+    <Box
+      sx={{
+        display: 'flex',
+        justifyContent: 'center',
+        p: 2,
+        m: 1,
+        bgcolor: '#F9FAFB',
+      }}
+    >
+      <h1> Reviews </h1>
+    </Box>
+    <Box
+      sx={{
+        display: 'flex',
+        justifyContent: 'center',
+        p: 2,
+        m: 1,
+        bgcolor: '#F9FAFB',
+      }}
+    >
+      <Paper style={{ width: "80%", padding: "40px 20px" }}>
+        <Grid container wrap="nowrap" spacing={2}>
+          <Grid item>
+            <Avatar alt="Remy Sharp"/> 
           </Grid>
-          <Divider variant="fullWidth" style={{ margin: "30px 0" }} />
-          <Grid container wrap="nowrap" spacing={2}>
-            <Grid item>
-              <Avatar alt="Remy Sharp" />
-            </Grid>
-            <Grid justifyContent="left" item xs zeroMinWidth>
-              <div>
-              <h4 style={{ margin: 0, textAlign: "left" }}>@williamjung</h4>
-              <Rating name="read-only" value={3} readOnly />
-              </div>
-              <p style={{ textAlign: "left" }}>
-                my name is william{" "}
-              </p>
-              <p style={{ textAlign: "left", color: "gray" }}>
-                posted 1 minute ago
-              </p>
-            </Grid>
+          <Grid justifyContent="left" item xs zeroMinWidth>
+            <div>
+            <h4 style={{ margin: 0, textAlign: "left" }}>@jessicaromero</h4>
+            <Rating name="read-only" value={3} readOnly />
+            </div>
+            <p style={{ textAlign: "left" }}>
+              my name is jessica{" "}
+            </p>
+            <p style={{ textAlign: "left", color: "gray" }}>
+              posted 1 minute ago
+            </p>
           </Grid>
-          <Divider variant="fullWidth" style={{ margin: "30px 0" }} />
-          <Grid container wrap="nowrap" spacing={2}>
-            <Grid item>
-              <Avatar alt="Remy Sharp" />
-            </Grid>
-            <Grid justifyContent="left" item xs zeroMinWidth>
-              <div>
-              <h4 style={{ margin: 0, textAlign: "left" }}>@christianchoi</h4>
-              <Rating name="read-only" value={3} readOnly />
-              </div>
-              <p style={{ textAlign: "left" }}>
-                my name is christian{" "}
-              </p>
-              <p style={{ textAlign: "left", color: "gray" }}>
-                posted 1 minute ago
-              </p>
-            </Grid>
+        </Grid>
+        <Divider variant="fullWidth" style={{ margin: "30px 0" }} />
+        <Grid container wrap="nowrap" spacing={2}>
+          <Grid item>
+            <Avatar alt="Remy Sharp" />
           </Grid>
-          </Paper>
-      </div>
-    </div>
+          <Grid justifyContent="left" item xs zeroMinWidth>
+            <div>
+            <h4 style={{ margin: 0, textAlign: "left" }}>@williamjung</h4>
+            <Rating name="read-only" value={3} readOnly />
+            </div>
+            <p style={{ textAlign: "left" }}>
+              my name is william{" "}
+            </p>
+            <p style={{ textAlign: "left", color: "gray" }}>
+              posted 1 minute ago
+            </p>
+          </Grid>
+        </Grid>
+        <Divider variant="fullWidth" style={{ margin: "30px 0" }} />
+        <Grid container wrap="nowrap" spacing={2}>
+          <Grid item>
+            <Avatar alt="Remy Sharp" />
+          </Grid>
+          <Grid justifyContent="left" item xs zeroMinWidth>
+            <div>
+            <h4 style={{ margin: 0, textAlign: "left" }}>@christianchoi</h4>
+            <Rating name="read-only" value={3} readOnly />
+            </div>
+            <p style={{ textAlign: "left" }}>
+              my name is christian{" "}
+            </p>
+            <p style={{ textAlign: "left", color: "gray" }}>
+              posted 1 minute ago
+            </p>
+          </Grid>
+        </Grid>
+      </Paper>
+    </Box>
     </>
   );
 }
