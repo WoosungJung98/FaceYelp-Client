@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import PropTypes from 'prop-types';
 // @mui
 import { styled } from '@mui/material/styles';
 import { Input, Slide, Button, IconButton, InputAdornment, ClickAwayListener } from '@mui/material';
@@ -34,6 +35,10 @@ const StyledSearchbar = styled('div')(({ theme }) => ({
 }));
 
 // ----------------------------------------------------------------------
+
+Searchbar.propTypes = {
+  setRestaurantList: PropTypes.func
+};
 
 export default function Searchbar({ setRestaurantList }) {
   const [open, setOpen] = useState(false);
@@ -78,7 +83,7 @@ export default function Searchbar({ setRestaurantList }) {
     else {
       setRestaurantList([]);
     }
-  }, [inputRestaurant, userCurrPosition]);
+  }, [inputRestaurant, userCurrPosition, client, setRestaurantList]);
 
   const handleOpen = () => {
     setOpen(!open);

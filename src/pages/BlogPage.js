@@ -2,14 +2,12 @@ import axios from 'axios';
 import { Helmet } from 'react-helmet-async';
 import { useParams } from 'react-router-dom';
 import { Grid} from '@mui/material';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import * as React from 'react';
 import Box from '@mui/material/Box';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
 import ImageListItemBar from '@mui/material/ImageListItemBar';
-import IconButton from '@mui/material/IconButton';
-import InfoIcon from '@mui/icons-material/Info';
 import GoogleMapReact from 'google-map-react';
 import { styled } from '@mui/material/styles';
 import Table from '@mui/material/Table';
@@ -33,7 +31,7 @@ export default function BlogPage() {
         "empty"
       ],
       "city": "empty",
-      "hours": null,
+      "hours": {},
       "isOpen": null,
       "latitude": null,
       "longitude": null,
@@ -43,10 +41,41 @@ export default function BlogPage() {
       "state": "empty"
   });
 
-  const [restaurantImages, setRestaurantImages] = useState([]);
+  const [businessPhotos, setBusinessPhotos] = useState([]);
   const client = axios.create({
     baseURL: "https://faceyelp.com/api/restaurant"
   });
+
+  // returns a new object with the values at each key mapped using mapFn(value)
+  const objectMap = (object, mapFn) => Object.keys(object).reduce((result, key) => {
+    result[key] = mapFn(object[key])
+    return result
+  }, {});
+
+  const toLocaleStr = (hr, min) => {
+    const dt = new Date();
+    dt.setHours(hr);
+    dt.setMinutes(min);
+    return dt.toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });
+  };
+
+  const hourMapFn = useCallback((value) => {
+    if(value === "Closed") return "Closed";
+    const splitVal = value.split('-');
+    if(splitVal.length < 2) return "Data Unavailable";
+    const openTime = splitVal[0].split(':');
+    const closeTime = splitVal[1].split(':');
+    if(openTime.length < 2 || closeTime.length < 2) return "Data Unavailable";
+    const openHr = parseInt(openTime[0], 10);
+    const openMin = parseInt(openTime[1], 10);
+    const closeHr = parseInt(closeTime[0], 10);
+    const closeMin = parseInt(closeTime[1], 10);
+    if(Number.isNaN(openHr) || Number.isNaN(openMin) || Number.isNaN(closeHr) || Number.isNaN(closeMin)) {
+      return "Data Unavailable";
+    }
+    if((openHr * 60 + openMin) >= (closeHr * 60 + closeMin)) return "Data Unavailable";
+    return [toLocaleStr(openHr, openMin), toLocaleStr(closeHr, closeMin)].join(" - ");
+  }, []);
 
   useEffect(() => {
     async function fetchRestaurantInfo() {
@@ -59,69 +88,12 @@ export default function BlogPage() {
     async function fetchRestaurantPhotos() {
       const responseImages = await client.get(`/${businessID}/photos`, {});
       if ('businessPhotoList' in responseImages.data){
-        setRestaurantImages(responseImages.data.businessPhotoList);
+        setBusinessPhotos(responseImages.data.businessPhotoList);
       }
     }
     fetchRestaurantInfo();
     fetchRestaurantPhotos();
-  }, []);
-
-  // returns a new object with the values at each key mapped using mapFn(value)
-  const objectMap = (object, mapFn) => {
-    return Object.keys(object).reduce((result, key) => {
-      result[key] = mapFn(object[key])
-      return result
-    }, {})
-  };
-
-  const hourMapFn = (value) => {
-    if(value === "Closed") return "Closed";
-    let open = value?.split("-")[0]?.split(":");
-    let close = value?.split("-")[1]?.split(":");
-    if (value !== null){
-      if (open[0] >= 12){
-        if (open[0] > 12){
-          open[0] =- 12;
-        }
-        if (open[1].length === 1){
-          open[1] += "0";
-        }
-        open[1] += "pm" ;
-      }
-      else{
-        if (open[1].length === 1){
-          open[1] += "0";
-        }
-        open[1] += "am";
-      }
-      if (close[0] >= 12){
-        if (close[0] > 12){
-          close[0] =- 12;
-        }
-        if (close[1].length === 1){
-          close[1] += "0"
-        }
-        close[1] += "pm" ;
-      }
-      else{
-        if (close[1].length === 1){
-          close[1] += "0"
-        }
-        close[1] += "am";
-      }
-      open = open.join(":");
-      close = close.join(":");
-    }
-    return [open, close].join("-");
-  };
-
-  const mapApiIsLoaded = (map, maps) => {
-    new maps.Marker({
-      position: { lat: restaurantInfo.latitude, lng: restaurantInfo.longitude},
-      map,
-      title: "Hello World!",
-    });
-  };
+  }, [businessID, client, hourMapFn]);
 
   const StyledTableCell = styled(TableCell)(({ theme }) => ({
     [`&.${tableCellClasses.head}`]: {
@@ -143,6 +115,55 @@ export default function BlogPage() {
     },
   }));
 
+  const restaurantImageListItems = useMemo(() => businessPhotos.map((photo) => {
+    const imgURL = `https://faceyelp.com/images/${photo.photo_id}.jpg`;
+    return (
+      <ImageListItem key={photo.photo_id}>
+        <img
+          src={`${imgURL}?w=248&fit=crop&auto=format`}
+          srcSet={`${imgURL}?w=248&fit=crop&auto=format&dpr=2 2x`}
+          alt={photo.label}
+          loading="lazy"
+        />
+        {photo.caption.length > 0 ? (<ImageListItemBar title={photo.caption}/>) : null}
+      </ImageListItem>
+    );
+  }), [businessPhotos]);
+
+  const restaurantImageList = () => {
+    if(businessPhotos.length === 0) return null;
+    const colsWidthMap = {
+      1: '40%',
+      2: '60%',
+      3: '80%',
+    };
+    const numCols = businessPhotos.length >= 3 ? 3 : businessPhotos.length;
+    const imgWidth = colsWidthMap[numCols];
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          p: 2,
+          m: 1,
+          bgcolor: '#F9FAFB',
+        }}
+      >
+        <ImageList variant="woven" cols={numCols} gap={8} sx={{ width: imgWidth, height: 420}}>
+          {restaurantImageListItems}
+        </ImageList>
+      </Box>
+    );
+  };
+
+  const mapApiIsLoaded = (map, maps) => {
+    new maps.Marker({
+      position: { lat: restaurantInfo.latitude, lng: restaurantInfo.longitude},
+      map,
+      title: "Hello World!",
+    });
+  };
+
   const getGoogleMapLoc = () => {
     if(restaurantInfo.latitude !== null && restaurantInfo.longitude !== null) {
       return (
@@ -160,20 +181,26 @@ export default function BlogPage() {
     return null;
   };
 
-  const restaurantImageListItems = useMemo(() => restaurantImages.map((img) => {
-    const imgURL = `https://faceyelp.com/images/${img.photo_id}.jpg`;
-    return (
-      <ImageListItem key={img.photo_id}>
-        <img
-          src={`${imgURL}?w=248&fit=crop&auto=format`}
-          srcSet={`${imgURL}?w=248&fit=crop&auto=format&dpr=2 2x`}
-          alt={img.label}
-          loading="lazy"
-        />
-        {img.caption.length > 0 ? (<ImageListItemBar title={img.caption}/>) : null}
-      </ImageListItem>
-    );
-  }), [restaurantImages]);
+  const restaurantHoursTableItems = useMemo(() => {
+    const dayOfWeekMap = {
+      "mon": "Monday",
+      "tues": "Tuesday",
+      "thurs": "Thursday",
+      "fri": "Friday",
+      "sat": "Saturday",
+      "sun": "Sunday"
+    };
+    return Object.entries(dayOfWeekMap).map(([key, val]) => (
+      <StyledTableRow key={key}>
+        <StyledTableCell component="th" scope="row">
+          {val}
+        </StyledTableCell>
+        <StyledTableCell align="left">
+          {key in restaurantInfo.hours ? restaurantInfo.hours[key] : "Data Unavailable"}
+        </StyledTableCell>
+      </StyledTableRow>
+    ));
+  }, [restaurantInfo.hours]);
 
   return (
     <>
@@ -224,21 +251,7 @@ export default function BlogPage() {
     >
       <Rating name="read-only" value={restaurantInfo.stars} readOnly />
     </Box>
-    {restaurantImages.length > 0 ? (
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          p: 2,
-          m: 1,
-          bgcolor: '#F9FAFB',
-        }}
-      >
-        <ImageList variant="woven" cols={3} gap={8} sx={{ width: '80%', height: 420}}>
-          {restaurantImageListItems}
-        </ImageList>
-      </Box>
-    ) : null}
+    {restaurantImageList()}
     {/* <div style={{width:"100%", float:"left", paddingLeft: "5px", paddingTop:"10px"}}>
       Open: Closes at 10pm NEED TO CHANGE
     </div> */}
@@ -264,48 +277,7 @@ export default function BlogPage() {
               </TableRow>
             </TableHead>
             <TableBody>
-                <StyledTableRow>
-                  <StyledTableCell component="th" scope="row">
-                    Monday
-                  </StyledTableCell>
-                  <StyledTableCell align="left"> {restaurantInfo.hours === null ? '...' : restaurantInfo.hours.mon}</StyledTableCell>
-                </StyledTableRow>
-                <StyledTableRow>
-                  <StyledTableCell component="th" scope="row">
-                    Tuesday
-                  </StyledTableCell>
-                  <StyledTableCell align="left">{restaurantInfo.hours === null ? '...' : restaurantInfo.hours.tues}</StyledTableCell>
-                </StyledTableRow>
-                <StyledTableRow>
-                  <StyledTableCell component="th" scope="row">
-                    Wednesday
-                  </StyledTableCell>
-                  <StyledTableCell align="left">{restaurantInfo.hours === null ? '...' : restaurantInfo.hours.wed}</StyledTableCell>
-                </StyledTableRow>
-                <StyledTableRow>
-                  <StyledTableCell component="th" scope="row">
-                    Thursday
-                  </StyledTableCell>
-                  <StyledTableCell align="left">{restaurantInfo.hours === null ? '...' : restaurantInfo.hours.thurs}</StyledTableCell>
-                </StyledTableRow>
-                <StyledTableRow>
-                  <StyledTableCell component="th" scope="row">
-                    Friday
-                  </StyledTableCell>
-                  <StyledTableCell align="left">{restaurantInfo.hours === null ? '...' : restaurantInfo.hours.fri}</StyledTableCell>
-                </StyledTableRow>
-                <StyledTableRow>
-                  <StyledTableCell component="th" scope="row">
-                    Saturday
-                  </StyledTableCell>
-                  <StyledTableCell align="left">{restaurantInfo.hours === null ? '...' : restaurantInfo.hours.sat}</StyledTableCell>
-                </StyledTableRow>
-                <StyledTableRow>
-                  <StyledTableCell component="th" scope="row">
-                    Sunday
-                  </StyledTableCell>
-                  <StyledTableCell align="left">{restaurantInfo.hours === null ? '...' : restaurantInfo.hours.sun}</StyledTableCell>
-                </StyledTableRow>
+              {restaurantHoursTableItems}
             </TableBody>
           </Table>
         </TableContainer>
