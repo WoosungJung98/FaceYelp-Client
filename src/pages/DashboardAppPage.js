@@ -22,7 +22,7 @@ import {
   AppCurrentSubject,
   AppConversionRates,
 } from '../sections/@dashboard/app';
-import HOSTNAME from '../config';
+import { HOSTNAME, APIHOST } from '../config';
 
 // ----------------------------------------------------------------------
 
@@ -38,10 +38,6 @@ export default function DashboardAppPage() {
 
   const theme = useTheme();
   const { state } = useLocation();
-
-  const client = axios.create({
-    baseURL: "https://faceyelp.com/api/restaurant"
-  });
 
   useEffect(() => {
     // navigator.geolocation.getCurrentPosition((pos) => {
@@ -60,17 +56,6 @@ export default function DashboardAppPage() {
       document.body.removeChild(script);
     }
   }, []);
-
-  const fetchRestaurantList = () => {
-    return client.get('/list', {
-      params: {
-        business_name: state.inputRestaurant,
-        latitude: userCurrPosition.latitude,
-        longitude: userCurrPosition.longitude,
-        radius: 100000
-      }
-    });
-  };
 
   const addRestaurantMarkers = (businessList) => {
     // Create an array of alphabetical characters used to label the markers.
@@ -104,10 +89,17 @@ export default function DashboardAppPage() {
        markerClusterer.current !== null) {
       markerClusterer.current.clearMarkers(true);
       if(state !== null && 'inputRestaurant' in state) {
-        (async () => {
-          const fetchedData = await fetchRestaurantList();
-          addRestaurantMarkers(fetchedData.data.businessList);
-        })()
+        axios.get(`${APIHOST}/api/restaurant/list`, {
+          params: {
+            business_name: state.inputRestaurant,
+            latitude: userCurrPosition.latitude,
+            longitude: userCurrPosition.longitude,
+            radius: 100000
+          }
+        }).then((response) => {
+          addRestaurantMarkers(response.data.businessList);
+          markerClusterer.current.render();
+        }).catch((err) => console.log(err));
       }
     }
   }, [state, userCurrPosition]);

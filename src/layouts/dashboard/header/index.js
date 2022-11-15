@@ -12,7 +12,7 @@ import Searchbar from './Searchbar';
 import AccountPopover from './AccountPopover';
 import LanguagePopover from './LanguagePopover';
 import NotificationsPopover from './NotificationsPopover';
-import HOSTNAME from '../../../config';
+import { HOSTNAME } from '../../../config';
 
 // ----------------------------------------------------------------------
 
@@ -47,16 +47,14 @@ Header.propTypes = {
 export default function Header({ onOpenNav }) {
   const [restaurantList, setRestaurantList] = useState([]);
 
-  const getSearchSuggestListItems = () => {
-    return restaurantList.map(item => (
-      <ListItem disablePadding key={item.businessID}>
-        <ListItemButton onClick={()=>{window.open(`${HOSTNAME}/restaurant/${item.businessID}`, '_blank');}}>
-        <ListItemText primary={item.businessName} secondary={item.address} />
-          <ListItemText primary={`${(item.distance * 0.000621371).toFixed(1)} mi`} />
-        </ListItemButton>
-      </ListItem>
-    ));
-  };
+  const getSearchSuggestListItems = () => restaurantList.map(item => (
+    <ListItem disablePadding key={item.businessID}>
+      <ListItemButton onClick={()=>{window.open(`${HOSTNAME}/restaurant/${item.businessID}`, '_blank');}}>
+      <ListItemText primary={item.businessName} secondary={item.address} />
+        <ListItemText primary={`${(item.distance * 0.000621371).toFixed(1)} mi`} />
+      </ListItemButton>
+    </ListItem>
+  ));
 
   return (
     <StyledRoot>

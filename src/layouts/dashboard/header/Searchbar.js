@@ -10,6 +10,7 @@ import { bgBlur } from '../../../utils/cssStyles';
 // component
 import Iconify from '../../../components/iconify';
 import { callWithToken } from '../../../common/helpers/utils/common';
+import { APIHOST } from '../../../config';
 
 // ----------------------------------------------------------------------
 
@@ -49,9 +50,6 @@ export default function Searchbar({ setRestaurantList }) {
   });
 
   const navigate = useNavigate();
-  const client = axios.create({
-    baseURL: "https://faceyelp.com/api/restaurant" 
-  });
 
   // useEffect(() => {
   //   navigator.geolocation.getCurrentPosition((pos) => {
@@ -65,25 +63,22 @@ export default function Searchbar({ setRestaurantList }) {
   // }, []);
 
   useEffect(() => {
-    async function fetchRestaurantList() {
-      const response = await client.get('/list', {
-        params: {
-          business_name: inputRestaurant,
-          latitude: userCurrPosition.latitude,
-          longitude: userCurrPosition.longitude,
-          radius: 10000,
-          length: 8
-        }
-      });
-      setRestaurantList(response.data.businessList);
-    }
-    if(inputRestaurant.length >= 3) {
-      fetchRestaurantList();
-    }
-    else {
+    if(inputRestaurant.length < 3) {
       setRestaurantList([]);
+      return;
     }
-  }, [inputRestaurant, userCurrPosition, client, setRestaurantList]);
+    axios.get(`${APIHOST}/api/restaurant/list`, {
+      params: {
+        business_name: inputRestaurant,
+        latitude: userCurrPosition.latitude,
+        longitude: userCurrPosition.longitude,
+        radius: 10000,
+        length: 8
+      }
+    }).then((response) =>
+      setRestaurantList(response.data.businessList)
+    ).catch((err) => console.log(err));
+  }, [inputRestaurant, userCurrPosition, setRestaurantList]);
 
   const handleOpen = () => {
     setOpen(!open);
@@ -95,13 +90,6 @@ export default function Searchbar({ setRestaurantList }) {
   };
 
   const handleSearch = () => {
-    // temp code below
-    callWithToken('get', `https://faceyelp.com/api/restaurant/sCPx4Sy4I1wMeZwsTzCFRg/info`, {})
-    .then((response) => {
-      console.log("Jesus");
-      console.log(response);
-    })
-    // temp code above
     const navState = {inputRestaurant};
     setInputRestaurant('');
     setOpen(false);

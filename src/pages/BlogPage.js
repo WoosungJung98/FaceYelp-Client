@@ -20,6 +20,7 @@ import Paper from '@mui/material/Paper';
 import Chip from '@mui/material/Chip'
 import Rating from '@mui/material/Rating'
 import { Divider, Avatar} from "@material-ui/core";
+import { APIHOST } from '../config';
 // ----------------------------------------------------------------------
 export default function BlogPage() {
   const { businessID } = useParams();
@@ -42,9 +43,6 @@ export default function BlogPage() {
   });
 
   const [businessPhotos, setBusinessPhotos] = useState([]);
-  const client = axios.create({
-    baseURL: "https://faceyelp.com/api/restaurant"
-  });
 
   // returns a new object with the values at each key mapped using mapFn(value)
   const objectMap = (object, mapFn) => Object.keys(object).reduce((result, key) => {
@@ -78,22 +76,18 @@ export default function BlogPage() {
   }, []);
 
   useEffect(() => {
-    async function fetchRestaurantInfo() {
-      const response = await client.get(`/${businessID}/info`, {});
+    axios.get(`${APIHOST}/api/restaurant/${businessID}/info`, {}).then((response) => {
       if('businessInfo' in response.data) {
         response.data.businessInfo.hours = objectMap(response.data.businessInfo.hours, hourMapFn);
         setRestaurantInfo(response.data.businessInfo);
       }
-    }
-    async function fetchRestaurantPhotos() {
-      const responseImages = await client.get(`/${businessID}/photos`, {});
-      if ('businessPhotoList' in responseImages.data){
-        setBusinessPhotos(responseImages.data.businessPhotoList);
+    }).catch((err) => console.log(err));
+    axios.get(`${APIHOST}/api/restaurant/${businessID}/photos`, {}).then((response) => {
+      if ('businessPhotoList' in response.data){
+        setBusinessPhotos(response.data.businessPhotoList);
       }
-    }
-    fetchRestaurantInfo();
-    fetchRestaurantPhotos();
-  }, [businessID, client, hourMapFn]);
+    }).catch((err) => console.log(err));
+  }, [businessID, hourMapFn]);
 
   const StyledTableCell = styled(TableCell)(({ theme }) => ({
     [`&.${tableCellClasses.head}`]: {
