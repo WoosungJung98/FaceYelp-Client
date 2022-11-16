@@ -12,7 +12,7 @@ import Searchbar from './Searchbar';
 import AccountPopover from './AccountPopover';
 import LanguagePopover from './LanguagePopover';
 import NotificationsPopover from './NotificationsPopover';
-// import HOSTNAME from '../../../config';
+import { HOSTNAME } from '../../../config';
 
 // ----------------------------------------------------------------------
 
@@ -45,9 +45,11 @@ Header.propTypes = {
 };
 
 export default function Header({ onOpenNav }) {
+  const [open, setOpen] = useState(false);
   const [restaurantList, setRestaurantList] = useState([]);
 
   const getSearchSuggestListItems = () => {
+    if(!open) return null;
     return restaurantList.map(item => (
       <ListItem disablePadding key={item.businessID}>
         <ListItemButton onClick={()=>{window.open(`https://faceyelp.com/restaurant/${item.businessID}`, '_blank');}}>
@@ -72,7 +74,7 @@ export default function Header({ onOpenNav }) {
           <Iconify icon="eva:menu-2-fill" />
         </IconButton>
 
-        <Searchbar setRestaurantList={setRestaurantList}/>
+        <Searchbar open={open} setOpen={setOpen} setRestaurantList={setRestaurantList}/>
         <Box sx={{ flexGrow: 1 }} />
 
         <Stack

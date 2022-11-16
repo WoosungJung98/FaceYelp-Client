@@ -1,73 +1,39 @@
-import { lazy, Suspense } from 'react';
 import { Navigate, useRoutes } from 'react-router-dom';
 // layouts
-const DashboardLayout = lazy(() => import('./layouts/dashboard'));
-const SimpleLayout = lazy(() => import('./layouts/simple'));
+import DashboardLayout from './layouts/dashboard';
+import SimpleLayout from './layouts/simple';
 // pages
-const BlogPage = lazy(() => import('./pages/BlogPage'));
-const UserPage = lazy(() => import('./pages/UserPage'));
-const LoginPage = lazy(() => import('./pages/LoginPage'));
-const Page404 = lazy(() => import('./pages/Page404'));
-const ProductsPage = lazy(() => import('./pages/ProductsPage'));
-const DashboardAppPage = lazy(() => import('./pages/DashboardAppPage'));
-const CreateAccountPage = lazy(() => import('./pages/CreateAccountPage'));
-
+import BlogPage from './pages/BlogPage';
+import UserPage from './pages/UserPage';
+import LoginPage from './pages/LoginPage';
+import Page404 from './pages/Page404';
+import ProductsPage from './pages/ProductsPage';
+import DashboardAppPage from './pages/DashboardAppPage';
+import CreateAccountPage from './pages/CreateAccountPage';
 // ----------------------------------------------------------------------
 
 export default function Router() {
   const routes = useRoutes([
     {
       path: '/dashboard',
-      element: (
-        <Suspense fallback={<>...</>}>
-          <DashboardLayout />
-        </Suspense>
-      ),
+      element: <DashboardLayout />,
       children: [
         { element: <Navigate to="/dashboard/app" />, index: true },
-        { path: 'app', element: (
-          <Suspense fallback={<>...</>}>
-            <DashboardAppPage />
-          </Suspense>
-        )},
-        { path: 'user', element: (
-          <Suspense fallback={<>...</>}>
-            <UserPage />
-          </Suspense>
-        )},
-        { path: 'products', element: (
-          <Suspense fallback={<>...</>}>
-            <ProductsPage />
-          </Suspense>
-        )},
+        { path: 'app', element: <DashboardAppPage /> },
+        { path: 'user', element: <UserPage /> },
+        { path: 'products', element: <ProductsPage /> },
       ],
     },
-    { path: 'restaurant/:businessID', element: (
-      <Suspense fallback={<>...</>}>
-        <BlogPage />
-      </Suspense>
-    )},
+    { path: 'restaurant/:businessID', element: <BlogPage /> },
     {
       path: 'login',
-      element: (
-        <Suspense fallback={<>...</>}>
-          <LoginPage />
-        </Suspense>
-      ),
+      element: <LoginPage />,
     },
     {
-      element: (
-        <Suspense fallback={<>...</>}>
-          <SimpleLayout />
-        </Suspense>
-      ),
+      element: <SimpleLayout />,
       children: [
         { element: <Navigate to="/dashboard/app" />, index: true },
-        { path: '404', element: (
-          <Suspense fallback={<>...</>}>
-            <Page404 />
-          </Suspense>
-        )},
+        { path: '404', element: <Page404 /> },
         { path: '*', element: <Navigate to="/404" /> },
       ],
     },

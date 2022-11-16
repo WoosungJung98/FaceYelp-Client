@@ -22,9 +22,9 @@ import {
   AppCurrentSubject,
   AppConversionRates,
 } from '../sections/@dashboard/app';
-// import HOSTNAME from '../config';
 import { getCookie } from '../common/helpers/api/session';
 import { callWithToken } from 'src/common/helpers/utils/common';
+import { HOSTNAME, APIHOST } from '../config';
 // ----------------------------------------------------------------------
 
 export default function DashboardAppPage() {
@@ -40,10 +40,6 @@ export default function DashboardAppPage() {
   const theme = useTheme();
   const { state } = useLocation();
   let accessToken = getCookie("accessToken");
-
-  const client = axios.create({
-    baseURL: `https://faceyelp.com`
-  });
 
   useEffect(() => {
     if (accessToken !== undefined){
@@ -72,17 +68,6 @@ export default function DashboardAppPage() {
       document.body.removeChild(script);
     }
   }, []);
-
-  const fetchRestaurantList = () => {
-    return client.get('/api/restaurant/list', {
-      params: {
-        business_name: state.inputRestaurant,
-        latitude: userCurrPosition.latitude,
-        longitude: userCurrPosition.longitude,
-        radius: 100000
-      }
-    });
-  };
 
   const addRestaurantMarkers = (businessList) => {
     // Create an array of alphabetical characters used to label the markers.
@@ -116,10 +101,17 @@ export default function DashboardAppPage() {
        markerClusterer.current !== null) {
       markerClusterer.current.clearMarkers(true);
       if(state !== null && 'inputRestaurant' in state) {
-        (async () => {
-          const fetchedData = await fetchRestaurantList();
-          addRestaurantMarkers(fetchedData.data.businessList);
-        })()
+        axios.get(`${APIHOST}/api/restaurant/list`, {
+          params: {
+            business_name: state.inputRestaurant,
+            latitude: userCurrPosition.latitude,
+            longitude: userCurrPosition.longitude,
+            radius: 100000
+          }
+        }).then((response) => {
+          addRestaurantMarkers(response.data.businessList);
+          markerClusterer.current.render();
+        }).catch((err) => console.log(err));
       }
     }
   }, [state, userCurrPosition]);

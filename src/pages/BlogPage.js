@@ -2,13 +2,12 @@ import axios from 'axios';
 import { Helmet } from 'react-helmet-async';
 import { useParams } from 'react-router-dom';
 import { Grid} from '@mui/material';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import * as React from 'react';
+import Box from '@mui/material/Box';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
 import ImageListItemBar from '@mui/material/ImageListItemBar';
-import IconButton from '@mui/material/IconButton';
-import InfoIcon from '@mui/icons-material/Info';
 import GoogleMapReact from 'google-map-react';
 import { styled } from '@mui/material/styles';
 import Table from '@mui/material/Table';
@@ -21,7 +20,7 @@ import Paper from '@mui/material/Paper';
 import Chip from '@mui/material/Chip'
 import Rating from '@mui/material/Rating'
 import { Divider, Avatar} from "@material-ui/core";
-// import HOSTNAME from '../config.default'
+import { APIHOST } from '../config';
 // ----------------------------------------------------------------------
 export default function BlogPage() {
   const { businessID } = useParams();
@@ -33,7 +32,7 @@ export default function BlogPage() {
         "empty"
       ],
       "city": "empty",
-      "hours": null,
+      "hours": {},
       "isOpen": null,
       "latitude": null,
       "longitude": null,
@@ -43,85 +42,52 @@ export default function BlogPage() {
       "state": "empty"
   });
 
-  const [restaurantImages, setRestaurantImages] = useState([]);
-  const client = axios.create({
-    baseURL: `https://faceyelp.com/api/restaurant`
-  });
+  const [businessPhotos, setBusinessPhotos] = useState([]);
+
+  // returns a new object with the values at each key mapped using mapFn(value)
+  const objectMap = (object, mapFn) => Object.keys(object).reduce((result, key) => {
+    result[key] = mapFn(object[key])
+    return result
+  }, {});
+
+  const toLocaleStr = (hr, min) => {
+    const dt = new Date();
+    dt.setHours(hr);
+    dt.setMinutes(min);
+    return dt.toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });
+  };
+
+  const hourMapFn = useCallback((value) => {
+    if(value === "Closed") return "Closed";
+    const splitVal = value.split('-');
+    if(splitVal.length < 2) return "Data Unavailable";
+    const openTime = splitVal[0].split(':');
+    const closeTime = splitVal[1].split(':');
+    if(openTime.length < 2 || closeTime.length < 2) return "Data Unavailable";
+    const openHr = parseInt(openTime[0], 10);
+    const openMin = parseInt(openTime[1], 10);
+    const closeHr = parseInt(closeTime[0], 10);
+    const closeMin = parseInt(closeTime[1], 10);
+    if(Number.isNaN(openHr) || Number.isNaN(openMin) || Number.isNaN(closeHr) || Number.isNaN(closeMin)) {
+      return "Data Unavailable";
+    }
+    if((openHr * 60 + openMin) >= (closeHr * 60 + closeMin)) return "Data Unavailable";
+    return [toLocaleStr(openHr, openMin), toLocaleStr(closeHr, closeMin)].join(" - ");
+  }, []);
 
   useEffect(() => {
-    async function fetchRestaurantInfo() {
-      const response = await client.get(`/${businessID}/info`, {});
+    axios.get(`${APIHOST}/api/restaurant/${businessID}/info`, {}).then((response) => {
       if('businessInfo' in response.data) {
         response.data.businessInfo.hours = objectMap(response.data.businessInfo.hours, hourMapFn);
         setRestaurantInfo(response.data.businessInfo);
       }
-    }
-    async function fetchRestaurantPhotos() {
-      const responseImages = await client.get(`/${businessID}/photos`, {});
-      if ('businessPhotoList' in responseImages.data){
-        setRestaurantImages(responseImages.data.businessPhotoList);
+    }).catch((err) => console.log(err));
+    axios.get(`${APIHOST}/api/restaurant/${businessID}/photos`, {}).then((response) => {
+      if ('businessPhotoList' in response.data){
+        setBusinessPhotos(response.data.businessPhotoList);
       }
-    }
-    fetchRestaurantInfo();
-    fetchRestaurantPhotos();
-  }, []);
-
-  // returns a new object with the values at each key mapped using mapFn(value)
-  const objectMap = (object, mapFn) => {
-    return Object.keys(object).reduce((result, key) => {
-      result[key] = mapFn(object[key])
-      return result
-    }, {})
-  };
-
-  const hourMapFn = (value) => {
-    if(value === "Closed") return "Closed";
-    let open = value?.split("-")[0]?.split(":");
-    let close = value?.split("-")[1]?.split(":");
-    if (value !== null){
-      if (open[0] >= 12){
-        if (open[0] > 12){
-          open[0] =- 12;
-        }
-        if (open[1].length === 1){
-          open[1] += "0";
-        }
-        open[1] += "pm" ;
-      }
-      else{
-        if (open[1].length === 1){
-          open[1] += "0";
-        }
-        open[1] += "am";
-      }
-      if (close[0] >= 12){
-        if (close[0] > 12){
-          close[0] =- 12;
-        }
-        if (close[1].length === 1){
-          close[1] += "0"
-        }
-        close[1] += "pm" ;
-      }
-      else{
-        if (close[1].length === 1){
-          close[1] += "0"
-        }
-        close[1] += "am";
-      }
-      open = open.join(":");
-      close = close.join(":");
-    }
-    return [open, close].join("-");
-  };
-
-  const mapApiIsLoaded = (map, maps) => {
-    new maps.Marker({
-      position: { lat: restaurantInfo.latitude, lng: restaurantInfo.longitude},
-      map,
-      title: "Hello World!",
-    });
-  };
+    }).catch((err) => console.log(err));
+  }, [businessID, hourMapFn]);
 
   const StyledTableCell = styled(TableCell)(({ theme }) => ({
     [`&.${tableCellClasses.head}`]: {
@@ -143,6 +109,55 @@ export default function BlogPage() {
     },
   }));
 
+  const restaurantImageListItems = useMemo(() => businessPhotos.map((photo) => {
+    const imgURL = `https://faceyelp.com/images/${photo.photo_id}.jpg`;
+    return (
+      <ImageListItem key={photo.photo_id}>
+        <img
+          src={`${imgURL}?w=248&fit=crop&auto=format`}
+          srcSet={`${imgURL}?w=248&fit=crop&auto=format&dpr=2 2x`}
+          alt={photo.label}
+          loading="lazy"
+        />
+        {photo.caption.length > 0 ? (<ImageListItemBar title={photo.caption}/>) : null}
+      </ImageListItem>
+    );
+  }), [businessPhotos]);
+
+  const restaurantImageList = () => {
+    if(businessPhotos.length === 0) return null;
+    const colsWidthMap = {
+      1: '40%',
+      2: '60%',
+      3: '80%',
+    };
+    const numCols = businessPhotos.length >= 3 ? 3 : businessPhotos.length;
+    const imgWidth = colsWidthMap[numCols];
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          p: 2,
+          m: 1,
+          bgcolor: '#F9FAFB',
+        }}
+      >
+        <ImageList variant="woven" cols={numCols} gap={8} sx={{ width: imgWidth, height: 420}}>
+          {restaurantImageListItems}
+        </ImageList>
+      </Box>
+    );
+  };
+
+  const mapApiIsLoaded = (map, maps) => {
+    new maps.Marker({
+      position: { lat: restaurantInfo.latitude, lng: restaurantInfo.longitude},
+      map,
+      title: "Hello World!",
+    });
+  };
+
   const getGoogleMapLoc = () => {
     if(restaurantInfo.latitude !== null && restaurantInfo.longitude !== null) {
       return (
@@ -160,183 +175,184 @@ export default function BlogPage() {
     return null;
   };
 
-  const restaurantImageListItems = useMemo(() => restaurantImages.map((img) => {
-    const imgURL = `https://faceyelp.com/images/${img.photo_id}.jpg`;
-    return (
-      <ImageListItem key={img.photo_id}>
-        <img
-          src={`${imgURL}?w=248&fit=crop&auto=format`}
-          srcSet={`${imgURL}?w=248&fit=crop&auto=format&dpr=2 2x`}
-          alt="Unavailable"
-          loading="lazy"
-        />
-        <ImageListItemBar
-          title={img.caption}
-          subtitle={img.label}
-          actionIcon={
-            <IconButton
-              sx={{ color: 'rgba(255, 255, 255, 0.54)' }}
-              aria-label={`info about ${img.label}`}
-            >
-              <InfoIcon />
-            </IconButton>
-          }
-        />
-      </ImageListItem>
-    );
-  }), [restaurantImages]);
+  const restaurantHoursTableItems = useMemo(() => {
+    const dayOfWeekMap = {
+      "mon": "Monday",
+      "tues": "Tuesday",
+      "thurs": "Thursday",
+      "fri": "Friday",
+      "sat": "Saturday",
+      "sun": "Sunday"
+    };
+    return Object.entries(dayOfWeekMap).map(([key, val]) => (
+      <StyledTableRow key={key}>
+        <StyledTableCell component="th" scope="row">
+          {val}
+        </StyledTableCell>
+        <StyledTableCell align="left">
+          {key in restaurantInfo.hours ? restaurantInfo.hours[key] : "Data Unavailable"}
+        </StyledTableCell>
+      </StyledTableRow>
+    ));
+  }, [restaurantInfo.hours]);
 
   return (
     <>
-      <Helmet>
-        <title> {restaurantInfo.businessName} </title>
-      </Helmet>
-    <h1>
-      {restaurantInfo.businessName}
-    </h1>
-    <div>
-      {
-        restaurantInfo.categories.map((category) => (
-          <div key={category} style={{padding:"2px", float:"left"}}>
-            <Chip label={category} />
-          </div>
-          )
-        ) 
-      }
-    </div>
-    <Rating name="read-only" value={restaurantInfo.stars} readOnly />
-    <div style={{width:"100%", float:"left", paddingLeft: "5px", paddingTop:"10px"}}>
+    <Helmet>
+      <title> {restaurantInfo.businessName} </title>
+    </Helmet>
+    <Box
+      sx={{
+        display: 'flex',
+        justifyContent: 'center',
+        p: 1,
+        m: 1,
+        bgcolor: '#F9FAFB',
+      }}
+    >
+      <h1>
+        {restaurantInfo.businessName}
+      </h1>
+    </Box>
+    <Box
+      sx={{
+        display: 'flex',
+        justifyContent: 'center',
+        p: 1,
+        m: 1,
+        bgcolor: '#F9FAFB',
+      }}
+    >
+      <div>
+        {
+          restaurantInfo.categories.map((category) => (
+            <div key={category} style={{padding:"2px", float:"left"}}>
+              <Chip label={category} />
+            </div>
+            )
+          ) 
+        }
+      </div>
+    </Box>
+    <Box
+      sx={{
+        display: 'flex',
+        justifyContent: 'center',
+        p: 1,
+        m: 1,
+        bgcolor: '#F9FAFB',
+      }}
+    >
+      <Rating name="read-only" value={restaurantInfo.stars} readOnly />
+    </Box>
+    {restaurantImageList()}
+    {/* <div style={{width:"100%", float:"left", paddingLeft: "5px", paddingTop:"10px"}}>
       Open: Closes at 10pm NEED TO CHANGE
-    </div>
-    <div style={{}} >
-      <ImageList sx={{ width: 1100, height: 370, margin:"auto"}}>
-        <ImageListItem key="Subheader" cols={2}>
-          <h1>Images</h1>
-        </ImageListItem>
-        {restaurantImageListItems}
-      </ImageList>
-    </div>
-    <div style={{ padding: "30px",}} >
-      <div style={{ height: '40vh', width: '50%', float:"left",  paddingLeft: "30px", paddingRight:"30px" }} >
+    </div> */}
+    <Box
+      sx={{
+        display: 'flex',
+        justifyContent: 'center',
+        p: 2,
+        m: 1,
+        bgcolor: '#F9FAFB',
+      }}
+    >
+      <div style={{ height: '42vh', width: '50%', paddingRight:"30px" }} >
         {getGoogleMapLoc()}
-        </div>
-        <div style={{ height: '38vh', width: '50%', float:"right", margin:"auto", paddingLeft: "50px", paddingRight:"50px", paddingBottom:"30px"}}>
+      </div>
+      <div style={{ height: '38vh', width: '30%', paddingLeft: "30px" }}>
         <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 10 }} style={{alignSelf:"flex-end"}} aria-label="customized table" size="small">
-          <TableHead>
-            <TableRow>
-              <StyledTableCell> Days</StyledTableCell>
-              <StyledTableCell align="left">Hours</StyledTableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-              <StyledTableRow>
-                <StyledTableCell component="th" scope="row">
-                  Monday
-                </StyledTableCell>
-                <StyledTableCell align="left"> {restaurantInfo.hours === null ? '...' : restaurantInfo.hours.mon}</StyledTableCell>
-              </StyledTableRow>
-              <StyledTableRow>
-                <StyledTableCell component="th" scope="row">
-                  Tuesday
-                </StyledTableCell>
-                <StyledTableCell align="left">{restaurantInfo.hours === null ? '...' : restaurantInfo.hours.tues}</StyledTableCell>
-              </StyledTableRow>
-              <StyledTableRow>
-                <StyledTableCell component="th" scope="row">
-                  Wednesday
-                </StyledTableCell>
-                <StyledTableCell align="left">{restaurantInfo.hours === null ? '...' : restaurantInfo.hours.wed}</StyledTableCell>
-              </StyledTableRow>
-              <StyledTableRow>
-                <StyledTableCell component="th" scope="row">
-                  Thursday
-                </StyledTableCell>
-                <StyledTableCell align="left">{restaurantInfo.hours === null ? '...' : restaurantInfo.hours.thurs}</StyledTableCell>
-              </StyledTableRow>
-              <StyledTableRow>
-                <StyledTableCell component="th" scope="row">
-                  Friday
-                </StyledTableCell>
-                <StyledTableCell align="left">{restaurantInfo.hours === null ? '...' : restaurantInfo.hours.fri}</StyledTableCell>
-              </StyledTableRow>
-              <StyledTableRow>
-                <StyledTableCell component="th" scope="row">
-                  Saturday
-                </StyledTableCell>
-                <StyledTableCell align="left">{restaurantInfo.hours === null ? '...' : restaurantInfo.hours.sat}</StyledTableCell>
-              </StyledTableRow>
-              <StyledTableRow>
-                <StyledTableCell component="th" scope="row">
-                  Sunday
-                </StyledTableCell>
-                <StyledTableCell align="left">{restaurantInfo.hours === null ? '...' : restaurantInfo.hours.sun}</StyledTableCell>
-              </StyledTableRow>
-          </TableBody>
-        </Table>
-      </TableContainer>
+          <Table sx={{ minWidth: 10 }} style={{alignSelf:"flex-end"}} aria-label="customized table" size="small">
+            <TableHead>
+              <TableRow>
+                <StyledTableCell> Days</StyledTableCell>
+                <StyledTableCell align="left">Hours</StyledTableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {restaurantHoursTableItems}
+            </TableBody>
+          </Table>
+        </TableContainer>
       </div>
-    </div>
-    <div style={{paddingTop:250}}>
-      <h1>Reviews </h1>
-      <div style={{ padding: 14 }} className="App">
-        <Paper style={{ padding: "40px 20px" }}>
-          <Grid container wrap="nowrap" spacing={2}>
-            <Grid item>
-              <Avatar alt="Remy Sharp"/> 
-            </Grid>
-            <Grid justifyContent="left" item xs zeroMinWidth>
-              <div>
-              <h4 style={{ margin: 0, textAlign: "left" }}>@jessicaromero</h4>
-              <Rating name="read-only" value={3} readOnly />
-              </div>
-              <p style={{ textAlign: "left" }}>
-                my name is jessica{" "}
-              </p>
-              <p style={{ textAlign: "left", color: "gray" }}>
-                posted 1 minute ago
-              </p>
-            </Grid>
+    </Box>
+    <Box
+      sx={{
+        display: 'flex',
+        justifyContent: 'center',
+        p: 2,
+        m: 1,
+        bgcolor: '#F9FAFB',
+      }}
+    >
+      <h1> Reviews </h1>
+    </Box>
+    <Box
+      sx={{
+        display: 'flex',
+        justifyContent: 'center',
+        p: 2,
+        m: 1,
+        bgcolor: '#F9FAFB',
+      }}
+    >
+      <Paper style={{ width: "80%", padding: "40px 20px" }}>
+        <Grid container wrap="nowrap" spacing={2}>
+          <Grid item>
+            <Avatar alt="Remy Sharp"/> 
           </Grid>
-          <Divider variant="fullWidth" style={{ margin: "30px 0" }} />
-          <Grid container wrap="nowrap" spacing={2}>
-            <Grid item>
-              <Avatar alt="Remy Sharp" />
-            </Grid>
-            <Grid justifyContent="left" item xs zeroMinWidth>
-              <div>
-              <h4 style={{ margin: 0, textAlign: "left" }}>@williamjung</h4>
-              <Rating name="read-only" value={3} readOnly />
-              </div>
-              <p style={{ textAlign: "left" }}>
-                my name is william{" "}
-              </p>
-              <p style={{ textAlign: "left", color: "gray" }}>
-                posted 1 minute ago
-              </p>
-            </Grid>
+          <Grid justifyContent="left" item xs zeroMinWidth>
+            <div>
+            <h4 style={{ margin: 0, textAlign: "left" }}>@jessicaromero</h4>
+            <Rating name="read-only" value={3} readOnly />
+            </div>
+            <p style={{ textAlign: "left" }}>
+              my name is jessica{" "}
+            </p>
+            <p style={{ textAlign: "left", color: "gray" }}>
+              posted 1 minute ago
+            </p>
           </Grid>
-          <Divider variant="fullWidth" style={{ margin: "30px 0" }} />
-          <Grid container wrap="nowrap" spacing={2}>
-            <Grid item>
-              <Avatar alt="Remy Sharp" />
-            </Grid>
-            <Grid justifyContent="left" item xs zeroMinWidth>
-              <div>
-              <h4 style={{ margin: 0, textAlign: "left" }}>@christianchoi</h4>
-              <Rating name="read-only" value={3} readOnly />
-              </div>
-              <p style={{ textAlign: "left" }}>
-                my name is christian{" "}
-              </p>
-              <p style={{ textAlign: "left", color: "gray" }}>
-                posted 1 minute ago
-              </p>
-            </Grid>
+        </Grid>
+        <Divider variant="fullWidth" style={{ margin: "30px 0" }} />
+        <Grid container wrap="nowrap" spacing={2}>
+          <Grid item>
+            <Avatar alt="Remy Sharp" />
           </Grid>
-          </Paper>
-      </div>
-    </div>
+          <Grid justifyContent="left" item xs zeroMinWidth>
+            <div>
+            <h4 style={{ margin: 0, textAlign: "left" }}>@williamjung</h4>
+            <Rating name="read-only" value={3} readOnly />
+            </div>
+            <p style={{ textAlign: "left" }}>
+              my name is william{" "}
+            </p>
+            <p style={{ textAlign: "left", color: "gray" }}>
+              posted 1 minute ago
+            </p>
+          </Grid>
+        </Grid>
+        <Divider variant="fullWidth" style={{ margin: "30px 0" }} />
+        <Grid container wrap="nowrap" spacing={2}>
+          <Grid item>
+            <Avatar alt="Remy Sharp" />
+          </Grid>
+          <Grid justifyContent="left" item xs zeroMinWidth>
+            <div>
+            <h4 style={{ margin: 0, textAlign: "left" }}>@christianchoi</h4>
+            <Rating name="read-only" value={3} readOnly />
+            </div>
+            <p style={{ textAlign: "left" }}>
+              my name is christian{" "}
+            </p>
+            <p style={{ textAlign: "left", color: "gray" }}>
+              posted 1 minute ago
+            </p>
+          </Grid>
+        </Grid>
+      </Paper>
+    </Box>
     </>
   );
 }

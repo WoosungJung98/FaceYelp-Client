@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd /home/ec2-user/FaceYelp-Client
+cd /home/ubuntu/FaceYelp-Client
 git reset --hard
 git checkout main
 git fetch origin

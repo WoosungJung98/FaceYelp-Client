@@ -6,8 +6,8 @@ import { Link, Stack, IconButton, InputAdornment, TextField, Checkbox } from '@m
 import { LoadingButton } from '@mui/lab';
 // components
 import Iconify from '../../../components/iconify';
-// import HOSTNAME from '../config.default'
-import { setCookie } from '../../../common/helpers/api/session'
+import { setCookie } from '../../../common/helpers/api/session';
+import { APIHOST } from '../../../config';
 // ----------------------------------------------------------------------
 
 export default function LoginForm() {
@@ -15,26 +15,19 @@ export default function LoginForm() {
   const inputEmail = useRef("");
   const inputPassword = useRef("");
   const [showPassword, setShowPassword] = useState(false);
-  const client = axios.create({
-    baseURL: `https://faceyelp.com/api/user`
-  });
 
-  const handleClick = async () => {
+  const handleClick = () => {
     console.log(inputEmail.current.current);
     console.log(inputPassword); 
-    const response = await client.post('/login', 
-    {email: inputEmail.current, password: inputPassword.current})
-    .then((response) => {
+    axios.post(`${APIHOST}/api/user/login`, {
+      email: inputEmail.current,
+      password: inputPassword.current
+    }).then((response) => {
       console.log(response.data.accessToken);
       setCookie("accessToken", response.data.accessToken);
       setCookie("refreshToken", response.data.refreshToken);
-      console.log(response);
-    })
-    .catch((error) => {
-      console.log(error);
-    });
-
-    navigate('/dashboard', { replace: true });
+      navigate('/dashboard', { replace: true });
+    }).catch((err) => console.log(err));
   };
 
   function emailOnChange(input) {

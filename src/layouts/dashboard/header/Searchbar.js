@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import PropTypes from 'prop-types';
 // @mui
 import { styled } from '@mui/material/styles';
 import { Input, Slide, Button, IconButton, InputAdornment, ClickAwayListener } from '@mui/material';
@@ -9,6 +10,7 @@ import { bgBlur } from '../../../utils/cssStyles';
 // component
 import Iconify from '../../../components/iconify';
 import { callWithToken } from '../../../common/helpers/utils/common';
+import { APIHOST } from '../../../config';
 
 // ----------------------------------------------------------------------
 
@@ -35,8 +37,13 @@ const StyledSearchbar = styled('div')(({ theme }) => ({
 
 // ----------------------------------------------------------------------
 
-export default function Searchbar({ setRestaurantList }) {
-  const [open, setOpen] = useState(false);
+Searchbar.propTypes = {
+  open: PropTypes.bool,
+  setOpen: PropTypes.func,
+  setRestaurantList: PropTypes.func
+};
+
+export default function Searchbar({ open, setOpen, setRestaurantList }) {
   const [inputRestaurant, setInputRestaurant] = useState('');
   const [userCurrPosition, setUserCurrPosition] = useState({
     latitude: 39.9,
@@ -44,9 +51,6 @@ export default function Searchbar({ setRestaurantList }) {
   });
 
   const navigate = useNavigate();
-  const client = axios.create({
-    baseURL: "https://faceyelp.com/api/restaurant" 
-  });
 
   // useEffect(() => {
   //   navigator.geolocation.getCurrentPosition((pos) => {
@@ -60,45 +64,33 @@ export default function Searchbar({ setRestaurantList }) {
   // }, []);
 
   useEffect(() => {
-    async function fetchRestaurantList() {
-      const response = await client.get('/list', {
-        params: {
-          business_name: inputRestaurant,
-          latitude: userCurrPosition.latitude,
-          longitude: userCurrPosition.longitude,
-          radius: 10000,
-          length: 8
-        }
-      });
-      setRestaurantList(response.data.businessList);
-    }
-    if(inputRestaurant.length >= 3) {
-      fetchRestaurantList();
-    }
-    else {
+    if(inputRestaurant.length < 3) {
       setRestaurantList([]);
+      return;
     }
-  }, [inputRestaurant, userCurrPosition]);
+    axios.get(`${APIHOST}/api/restaurant/list`, {
+      params: {
+        business_name: inputRestaurant,
+        latitude: userCurrPosition.latitude,
+        longitude: userCurrPosition.longitude,
+        radius: 10000,
+        length: 8
+      }
+    }).then((response) =>
+      setRestaurantList(response.data.businessList)
+    ).catch((err) => console.log(err));
+  }, [inputRestaurant, userCurrPosition, setRestaurantList]);
 
   const handleOpen = () => {
     setOpen(!open);
   };
 
   const handleClose = () => {
-    setInputRestaurant('');
     setOpen(false);
   };
 
   const handleSearch = () => {
-    // temp code below
-    callWithToken('get', `https://faceyelp.com/api/restaurant/sCPx4Sy4I1wMeZwsTzCFRg/info`, {})
-    .then((response) => {
-      console.log("Jesus");
-      console.log(response);
-    })
-    // temp code above
     const navState = {inputRestaurant};
-    setInputRestaurant('');
     setOpen(false);
     navigate('/dashboard/app', { replace: true, state: navState });
   };
@@ -117,14 +109,21 @@ export default function Searchbar({ setRestaurantList }) {
               autoFocus
               fullWidth
               disableUnderline
-              placeholder="Search…"
+              placeholder="Search Restaurant…"
               startAdornment={
                 <InputAdornment position="start">
                   <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled', width: 20, height: 20 }} />
                 </InputAdornment>
               }
               sx={{ mr: 1, fontWeight: 'fontWeightBold' }}
+              value={inputRestaurant}
               onChange={(e) => setInputRestaurant(e.target.value)}
+              onKeyPress={(e) => {
+                if(e.key === "Enter") {
+                  handleSearch();
+                  e.preventDefault();
+                }
+              }}
             />
             <Button variant="contained" onClick={handleSearch}>
               Search
