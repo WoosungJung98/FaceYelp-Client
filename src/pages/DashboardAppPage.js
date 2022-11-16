@@ -23,7 +23,8 @@ import {
   AppConversionRates,
 } from '../sections/@dashboard/app';
 // import HOSTNAME from '../config';
-
+import { getCookie } from '../common/helpers/api/session';
+import { callWithToken } from 'src/common/helpers/utils/common';
 // ----------------------------------------------------------------------
 
 export default function DashboardAppPage() {
@@ -35,13 +36,23 @@ export default function DashboardAppPage() {
   const mapInstance = useRef(null);
   const mapInfoWindow = useRef(null);
   const markerClusterer = useRef(null);
-
+  const [username, setUsername] = useState(null);
   const theme = useTheme();
   const { state } = useLocation();
+  let accessToken = getCookie("accessToken");
 
   const client = axios.create({
-    baseURL: `https://faceyelp.com/api/restaurant`
+    baseURL: `https://faceyelp.com`
   });
+
+  useEffect(() => {
+    if (accessToken !== undefined){
+    callWithToken('get', `https://faceyelp.com/api/user/info`, {})
+    .then((response) => {
+      setUsername(response.data.userName);
+    })}
+
+  }, [accessToken])
 
   useEffect(() => {
     // navigator.geolocation.getCurrentPosition((pos) => {
@@ -56,13 +67,14 @@ export default function DashboardAppPage() {
     script.src = "https://unpkg.com/@googlemaps/markerclusterer/dist/index.min.js";
     script.async = true;
     document.body.appendChild(script);
+  
     return () => {
       document.body.removeChild(script);
     }
   }, []);
 
   const fetchRestaurantList = () => {
-    return client.get('/list', {
+    return client.get('/api/restaurant/list', {
       params: {
         business_name: state.inputRestaurant,
         latitude: userCurrPosition.latitude,
@@ -143,7 +155,7 @@ export default function DashboardAppPage() {
 
       <Container maxWidth="xl">
         <Typography variant="h4" sx={{ mb: 5 }}>
-          Hi, Welcome back
+          Hi, Welcome back {username}
         </Typography>
 
         <Grid container spacing={3}>

@@ -7,7 +7,7 @@ import { LoadingButton } from '@mui/lab';
 // components
 import Iconify from '../../../components/iconify';
 // import HOSTNAME from '../config.default'
-
+import { setCookie } from '../../../common/helpers/api/session'
 // ----------------------------------------------------------------------
 
 export default function LoginForm() {
@@ -18,12 +18,16 @@ export default function LoginForm() {
   const client = axios.create({
     baseURL: `https://faceyelp.com/api/user`
   });
+
   const handleClick = async () => {
-    console.log(inputEmail.current);
-    console.log(inputPassword.current);
+    console.log(inputEmail.current.current);
+    console.log(inputPassword); 
     const response = await client.post('/login', 
     {email: inputEmail.current, password: inputPassword.current})
     .then((response) => {
+      console.log(response.data.accessToken);
+      setCookie("accessToken", response.data.accessToken);
+      setCookie("refreshToken", response.data.refreshToken);
       console.log(response);
     })
     .catch((error) => {

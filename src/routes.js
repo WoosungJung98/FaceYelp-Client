@@ -10,6 +10,7 @@ const LoginPage = lazy(() => import('./pages/LoginPage'));
 const Page404 = lazy(() => import('./pages/Page404'));
 const ProductsPage = lazy(() => import('./pages/ProductsPage'));
 const DashboardAppPage = lazy(() => import('./pages/DashboardAppPage'));
+const CreateAccountPage = lazy(() => import('./pages/CreateAccountPage'));
 
 // ----------------------------------------------------------------------
 
