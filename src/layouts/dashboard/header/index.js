@@ -45,16 +45,20 @@ Header.propTypes = {
 };
 
 export default function Header({ onOpenNav }) {
+  const [open, setOpen] = useState(false);
   const [restaurantList, setRestaurantList] = useState([]);
 
-  const getSearchSuggestListItems = () => restaurantList.map(item => (
-    <ListItem disablePadding key={item.businessID}>
-      <ListItemButton onClick={()=>{window.open(`${HOSTNAME}/restaurant/${item.businessID}`, '_blank');}}>
-      <ListItemText primary={item.businessName} secondary={item.address} />
-        <ListItemText primary={`${(item.distance * 0.000621371).toFixed(1)} mi`} />
-      </ListItemButton>
-    </ListItem>
-  ));
+  const getSearchSuggestListItems = () => {
+    if(!open) return null;
+    return restaurantList.map(item => (
+      <ListItem disablePadding key={item.businessID}>
+        <ListItemButton onClick={()=>{window.open(`${HOSTNAME}/restaurant/${item.businessID}`, '_blank');}}>
+        <ListItemText primary={item.businessName} secondary={item.address} />
+          <ListItemText primary={`${(item.distance * 0.000621371).toFixed(1)} mi`} />
+        </ListItemButton>
+      </ListItem>
+    ));
+  };
 
   return (
     <StyledRoot>
@@ -70,7 +74,7 @@ export default function Header({ onOpenNav }) {
           <Iconify icon="eva:menu-2-fill" />
         </IconButton>
 
-        <Searchbar setRestaurantList={setRestaurantList}/>
+        <Searchbar open={open} setOpen={setOpen} setRestaurantList={setRestaurantList}/>
         <Box sx={{ flexGrow: 1 }} />
 
         <Stack

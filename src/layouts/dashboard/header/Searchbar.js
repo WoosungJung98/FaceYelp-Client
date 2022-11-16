@@ -38,11 +38,12 @@ const StyledSearchbar = styled('div')(({ theme }) => ({
 // ----------------------------------------------------------------------
 
 Searchbar.propTypes = {
+  open: PropTypes.bool,
+  setOpen: PropTypes.func,
   setRestaurantList: PropTypes.func
 };
 
-export default function Searchbar({ setRestaurantList }) {
-  const [open, setOpen] = useState(false);
+export default function Searchbar({ open, setOpen, setRestaurantList }) {
   const [inputRestaurant, setInputRestaurant] = useState('');
   const [userCurrPosition, setUserCurrPosition] = useState({
     latitude: 39.9,
@@ -85,13 +86,11 @@ export default function Searchbar({ setRestaurantList }) {
   };
 
   const handleClose = () => {
-    setInputRestaurant('');
     setOpen(false);
   };
 
   const handleSearch = () => {
     const navState = {inputRestaurant};
-    setInputRestaurant('');
     setOpen(false);
     navigate('/dashboard/app', { replace: true, state: navState });
   };
@@ -110,14 +109,21 @@ export default function Searchbar({ setRestaurantList }) {
               autoFocus
               fullWidth
               disableUnderline
-              placeholder="Search…"
+              placeholder="Search Restaurant…"
               startAdornment={
                 <InputAdornment position="start">
                   <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled', width: 20, height: 20 }} />
                 </InputAdornment>
               }
               sx={{ mr: 1, fontWeight: 'fontWeightBold' }}
+              value={inputRestaurant}
               onChange={(e) => setInputRestaurant(e.target.value)}
+              onKeyPress={(e) => {
+                if(e.key === "Enter") {
+                  handleSearch();
+                  e.preventDefault();
+                }
+              }}
             />
             <Button variant="contained" onClick={handleSearch}>
               Search
