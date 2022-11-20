@@ -40,6 +40,7 @@ export default function DashboardAppPage() {
   const theme = useTheme();
   const { state } = useLocation();
   let accessToken = getCookie("accessToken");
+  console.log(getCookie("accessToken"));
 
   useEffect(() => {
     if (accessToken !== undefined){

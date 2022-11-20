@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { styled } from '@mui/material/styles';
 import { Box, Stack, AppBar, Button, Toolbar, IconButton, List, ListItem, ListItemButton, ListItemText } from '@mui/material';
 // utils
-import { Login } from '@mui/icons-material';
+import { DocumentScanner, Login } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { bgBlur } from '../../../utils/cssStyles';
 // components
@@ -16,6 +16,7 @@ import NotificationsPopover from './NotificationsPopover';
 import { HOSTNAME } from '../../../config';
 import LogInButton from './LogInButton';
 import FriendsListButton from './FriendsListButton';
+import  { getCookie } from '../../../common/helpers/api/session'
 
 
 // ----------------------------------------------------------------------
@@ -56,6 +57,8 @@ export default function Header({ onOpenNav }) {
   {
     navigate('/friends', {replace: true});
   }
+
+  const loginButton = getCookie("accessToken") === undefined || getCookie("refreshToken") === undefined ? (<LogInButton />) : (<AccountPopover />); 
   const getSearchSuggestListItems = () => {
     if(!open) return null;
     return restaurantList.map(item => (
@@ -67,7 +70,6 @@ export default function Header({ onOpenNav }) {
       </ListItem>
     ));
   };
-
   return (
     <StyledRoot>
       <StyledToolbar>
@@ -93,9 +95,9 @@ export default function Header({ onOpenNav }) {
             sm: 1,
           }}
         >
-          <LogInButton />
+          {loginButton}
           <NotificationsPopover />
-          <AccountPopover />
+          
         </Stack>
       </StyledToolbar>
       <Box sx={{ width: '100%', maxWidth: 500, color: '#5A5A5A'}}>
