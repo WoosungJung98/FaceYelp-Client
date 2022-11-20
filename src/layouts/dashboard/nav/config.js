@@ -3,39 +3,60 @@ import SvgColor from '../../../components/svg-color';
 
 // ----------------------------------------------------------------------
 
-const icon = (name) => <SvgColor src={`/assets/icons/navbar/${name}.svg`} sx={{ width: 1, height: 1 }} />;
+const icon = (name) => <SvgColor src={`${name}`} sx={{ width: 1, height: 1 }} />;
 
 const navConfig = [
   {
-    title: 'dashboard',
+    title: 'Christian Choi',
+    path: '/christianchoi',
+    icon: icon("http://cdn.onlinewebfonts.com/svg/img_183066.png"),
+  },
+  {
+    title: 'Christian Choi',
     path: '/dashboard/app',
-    icon: icon('ic_analytics'),
+    icon: icon("http://cdn.onlinewebfonts.com/svg/img_183066.png"),
   },
   {
-    title: 'user',
+    title: 'Christian Choi',
+    path: '/dashboard/app',
+    icon: icon("http://cdn.onlinewebfonts.com/svg/img_183066.png"),
+  },
+  {
+    title: 'Christian Choi',
+    path: '/dashboard/app',
+    icon: icon("http://cdn.onlinewebfonts.com/svg/img_183066.png"),
+  },
+  {
+    title: 'Christian Choi',
+    path: '/dashboard/app',
+    icon: icon("http://cdn.onlinewebfonts.com/svg/img_183066.png"),
+  },
+  {
+    title: 'Christian Choi',
+    path: '/dashboard/app',
+    icon: icon("http://cdn.onlinewebfonts.com/svg/img_183066.png"),
+  },
+  {
+    title: 'Christian Choi',
+    path: '/dashboard/app',
+    icon: icon("http://cdn.onlinewebfonts.com/svg/img_183066.png"),
+  },
+  {
+    title: 'Christian Choi',
+    path: '/dashboard/app',
+    icon: icon("http://cdn.onlinewebfonts.com/svg/img_183066.png"),
+  },
+  {
+    title: 'William Jung',
     path: '/dashboard/user',
-    icon: icon('ic_user'),
+    icon: icon('https://upload.wikimedia.org/wikipedia/commons/4/47/PNG_transparency_demonstration_1.png')
   },
   {
-    title: 'product',
+    title: 'jessica romero',
     path: '/dashboard/products',
-    icon: icon('ic_cart'),
-  },
-  {
-    title: 'blog',
-    path: '/dashboard/blog',
-    icon: icon('ic_blog'),
-  },
-  {
-    title: 'login',
-    path: '/login',
-    icon: icon('ic_lock'),
-  },
-  {
-    title: 'Not found',
-    path: '/404',
-    icon: icon('ic_disabled'),
-  },
+    icon: icon('http://cdn.onlinewebfonts.com/svg/img_183066.png'),
+  }
+
 ];
 
 export default navConfig;

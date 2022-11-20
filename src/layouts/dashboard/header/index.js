@@ -2,17 +2,21 @@ import PropTypes from 'prop-types';
 import { useState } from 'react';
 // @mui
 import { styled } from '@mui/material/styles';
-import { Box, Stack, AppBar, Toolbar, IconButton, List, ListItem, ListItemButton, ListItemText } from '@mui/material';
+import { Box, Stack, AppBar, Button, Toolbar, IconButton, List, ListItem, ListItemButton, ListItemText } from '@mui/material';
 // utils
+import { Login } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 import { bgBlur } from '../../../utils/cssStyles';
 // components
 import Iconify from '../../../components/iconify';
 //
 import Searchbar from './Searchbar';
 import AccountPopover from './AccountPopover';
-import LanguagePopover from './LanguagePopover';
 import NotificationsPopover from './NotificationsPopover';
 import { HOSTNAME } from '../../../config';
+import LogInButton from './LogInButton';
+import FriendsListButton from './FriendsListButton';
+
 
 // ----------------------------------------------------------------------
 
@@ -47,7 +51,11 @@ Header.propTypes = {
 export default function Header({ onOpenNav }) {
   const [open, setOpen] = useState(false);
   const [restaurantList, setRestaurantList] = useState([]);
-
+  const navigate = useNavigate();
+  const toFriendsList = () =>
+  {
+    navigate('/friends', {replace: true});
+  }
   const getSearchSuggestListItems = () => {
     if(!open) return null;
     return restaurantList.map(item => (
@@ -76,7 +84,7 @@ export default function Header({ onOpenNav }) {
 
         <Searchbar open={open} setOpen={setOpen} setRestaurantList={setRestaurantList}/>
         <Box sx={{ flexGrow: 1 }} />
-
+        <FriendsListButton />
         <Stack
           direction="row"
           alignItems="center"
@@ -85,7 +93,7 @@ export default function Header({ onOpenNav }) {
             sm: 1,
           }}
         >
-          <LanguagePopover />
+          <LogInButton />
           <NotificationsPopover />
           <AccountPopover />
         </Stack>

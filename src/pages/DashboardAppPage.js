@@ -43,7 +43,7 @@ export default function DashboardAppPage() {
 
   useEffect(() => {
     if (accessToken !== undefined){
-    callWithToken('get', `https://faceyelp.com/api/user/info`, {})
+    callWithToken('get', `${APIHOST}/api/user/info`, {})
     .then((response) => {
       setUsername(response.data.userName);
     })}
@@ -147,7 +147,7 @@ export default function DashboardAppPage() {
 
       <Container maxWidth="xl">
         <Typography variant="h4" sx={{ mb: 5 }}>
-          Hi, Welcome back {username}
+          Hi, Welcome back
         </Typography>
 
         <Grid container spacing={3}>

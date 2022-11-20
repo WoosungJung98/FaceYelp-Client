@@ -1,9 +1,13 @@
 import PropTypes from 'prop-types';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 // @mui
 import { styled, alpha } from '@mui/material/styles';
 import { Box, Link, Button, Drawer, Typography, Avatar, Stack } from '@mui/material';
+
+import { getCookie } from '../../../common/helpers/api/session';
+import { callWithToken } from '../../../common/helpers/utils/common';
+import { HOSTNAME, APIHOST } from '../../../config';
 // mock
 import account from '../../../_mock/account';
 // hooks
@@ -35,6 +39,19 @@ Nav.propTypes = {
 };
 
 export default function Nav({ openNav, onCloseNav }) {
+
+  const accessToken = getCookie("accessToken");
+  const [username, setUsername] = useState(null);
+  
+  useEffect(() => {
+    if (accessToken !== undefined){
+    callWithToken('get', `${APIHOST}/api/user/info`, {})
+    .then((response) => {
+      setUsername(response.data.userName);
+    })}
+
+  }, [accessToken])
+
   const { pathname } = useLocation();
 
   const isDesktop = useResponsive('up', 'lg');
@@ -64,7 +81,7 @@ export default function Nav({ openNav, onCloseNav }) {
 
             <Box sx={{ ml: 2 }}>
               <Typography variant="subtitle2" sx={{ color: 'text.primary' }}>
-                {account.displayName}
+                {username}
               </Typography>
 
               <Typography variant="body2" sx={{ color: 'text.secondary' }}>
@@ -79,29 +96,6 @@ export default function Nav({ openNav, onCloseNav }) {
 
       <Box sx={{ flexGrow: 1 }} />
 
-      <Box sx={{ px: 2.5, pb: 3, mt: 10 }}>
-        <Stack alignItems="center" spacing={3} sx={{ pt: 5, borderRadius: 2, position: 'relative' }}>
-          <Box
-            component="img"
-            src="/assets/illustrations/illustration_avatar.png"
-            sx={{ width: 100, position: 'absolute', top: -50 }}
-          />
-
-          <Box sx={{ textAlign: 'center' }}>
-            <Typography gutterBottom variant="h6">
-              Get more?
-            </Typography>
-
-            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-              From only $69
-            </Typography>
-          </Box>
-
-          <Button href="https://material-ui.com/store/items/minimal-dashboard/" target="_blank" variant="contained">
-            Upgrade to Pro
-          </Button>
-        </Stack>
-      </Box>
     </Scrollbar>
   );
 

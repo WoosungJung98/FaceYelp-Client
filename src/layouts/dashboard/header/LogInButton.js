@@ -2,6 +2,7 @@ import { useState } from 'react';
 // @mui
 import { alpha } from '@mui/material/styles';
 import { Box, MenuItem, Stack, IconButton, Popover } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 
 // ----------------------------------------------------------------------
 
@@ -25,10 +26,11 @@ const LANGS = [
 
 // ----------------------------------------------------------------------
 
-export default function LanguagePopover() {
+export default function LogInButton() {
   const [open, setOpen] = useState(null);
-
+  const navigate = useNavigate();
   const handleOpen = (event) => {
+    navigate('/login', { replace: true})
     setOpen(event.currentTarget);
   };
 
@@ -42,16 +44,18 @@ export default function LanguagePopover() {
         onClick={handleOpen}
         sx={{
           padding: 0,
-          width: 44,
+          width: 90,
           height: 44,
           ...(open && {
             bgcolor: (theme) => alpha(theme.palette.primary.main, theme.palette.action.focusOpacity),
           }),
         }}
       >
-        <img src={LANGS[0].icon} alt={LANGS[0].label} />
+      Log In
       </IconButton>
 
+
+{/* 
       <Popover
         open={Boolean(open)}
         anchorEl={open}
@@ -71,7 +75,9 @@ export default function LanguagePopover() {
             },
           },
         }}
-      >
+      > 
+
+
         <Stack spacing={0.75}>
           {LANGS.map((option) => (
             <MenuItem key={option.value} selected={option.value === LANGS[0].value} onClick={() => handleClose()}>
@@ -81,7 +87,7 @@ export default function LanguagePopover() {
             </MenuItem>
           ))}
         </Stack>
-      </Popover>
+          </Popover> */}
     </>
   );
 }

@@ -32,6 +32,7 @@ export default function AccountPopover() {
   };
 
   const handleClose = () => {
+    //  need to do something here
     setOpen(null);
   };
 

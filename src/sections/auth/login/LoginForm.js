@@ -18,7 +18,7 @@ export default function LoginForm() {
 
   const handleClick = () => {
     console.log(inputEmail.current.current);
-    console.log(inputPassword); 
+    console.log(inputPassword);
     axios.post(`${APIHOST}/api/user/login`, {
       email: inputEmail.current,
       password: inputPassword.current
@@ -27,7 +27,7 @@ export default function LoginForm() {
       setCookie("accessToken", response.data.accessToken);
       setCookie("refreshToken", response.data.refreshToken);
       navigate('/dashboard', { replace: true });
-    }).catch((err) => console.log(err));
+    }).catch((err) => alert(err));
   };
 
   function emailOnChange(input) {

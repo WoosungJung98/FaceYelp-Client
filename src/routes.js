@@ -20,14 +20,20 @@ export default function Router() {
       children: [
         { element: <Navigate to="/dashboard/app" />, index: true },
         { path: 'app', element: <DashboardAppPage /> },
-        { path: 'user', element: <UserPage /> },
         { path: 'products', element: <ProductsPage /> },
       ],
+    },
+    {
+      path: '/friends',
+      element: <UserPage />
     },
     { path: 'restaurant/:businessID', element: <BlogPage /> },
     {
       path: 'login',
       element: <LoginPage />,
+    },
+    { path: 'login/createaccount',
+      element:<CreateAccountPage />,
     },
     {
       element: <SimpleLayout />,
