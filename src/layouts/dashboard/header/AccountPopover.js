@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 // @mui
 import { alpha } from '@mui/material/styles';
 import { Box, Divider, Typography, Stack, MenuItem, Avatar, IconButton, Popover } from '@mui/material';
 // mocks_
 import account from '../../../_mock/account';
-
+import { getCookie, removeSession } from '../../../common/helpers/api/session';
+import { callWithToken } from '../../../common/helpers/utils/common';
+import { HOSTNAME, APIHOST } from '../../../config';
 // ----------------------------------------------------------------------
 
 const MENU_OPTIONS = [
@@ -26,14 +28,31 @@ const MENU_OPTIONS = [
 
 export default function AccountPopover() {
   const [open, setOpen] = useState(null);
-
+  const [username, setUsername] = useState(null);
+  const [email, setEmail] = useState(null);
+  const accessToken = getCookie("accessToken");
   const handleOpen = (event) => {
     setOpen(event.currentTarget);
   };
 
   const handleClose = () => {
+    //  need to do something here
     setOpen(null);
   };
+  const handleCloseLogout = () => {
+    //  need to do something here
+    removeSession();
+    window.location.reload(false);
+    setOpen(null);
+  };
+  useEffect(() => {
+    if (accessToken !== undefined){
+    callWithToken('get', `${APIHOST}/api/user/info`, {})
+    .then((response) => {
+      setUsername(response.data.userName);
+      setEmail(response.data.email);
+    })}
+    }, [accessToken])
 
   return (
     <>
@@ -78,10 +97,10 @@ export default function AccountPopover() {
       >
         <Box sx={{ my: 1.5, px: 2.5 }}>
           <Typography variant="subtitle2" noWrap>
-            {account.displayName}
+            {username}
           </Typography>
           <Typography variant="body2" sx={{ color: 'text.secondary' }} noWrap>
-            {account.email}
+            {email}
           </Typography>
         </Box>
 
@@ -97,7 +116,7 @@ export default function AccountPopover() {
 
         <Divider sx={{ borderStyle: 'dashed' }} />
 
-        <MenuItem onClick={handleClose} sx={{ m: 1 }}>
+        <MenuItem onClick={handleCloseLogout} sx={{ m: 1 }}>
           Logout
         </MenuItem>
       </Popover>

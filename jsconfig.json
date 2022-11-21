@@ -6,7 +6,7 @@
   },
   "include": [
     "src/**/*"
-  ],
+, "config.jsx"  ],
   "exclude": [
     "node_modules"
   ]

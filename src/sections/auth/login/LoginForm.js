@@ -6,8 +6,8 @@ import { Link, Stack, IconButton, InputAdornment, TextField, Checkbox } from '@m
 import { LoadingButton } from '@mui/lab';
 // components
 import Iconify from '../../../components/iconify';
+import { setCookie } from '../../../common/helpers/api/session';
 import { APIHOST } from '../../../config';
-
 // ----------------------------------------------------------------------
 
 export default function LoginForm() {
@@ -15,16 +15,19 @@ export default function LoginForm() {
   const inputEmail = useRef("");
   const inputPassword = useRef("");
   const [showPassword, setShowPassword] = useState(false);
+
   const handleClick = () => {
-    console.log(inputEmail);
+    console.log(inputEmail.current.current);
     console.log(inputPassword);
     axios.post(`${APIHOST}/api/user/login`, {
-      email: inputEmail,
-      password: inputPassword
+      email: inputEmail.current,
+      password: inputPassword.current
     }).then((response) => {
-      console.log(response);
-      // navigate('/dashboard', { replace: true });
-    }).catch((err) => console.log(err));
+      console.log(response.data.accessToken);
+      setCookie("accessToken", response.data.accessToken);
+      setCookie("refreshToken", response.data.refreshToken);
+      navigate('/dashboard', { replace: true });
+    }).catch((err) => alert(err));
   };
 
   function emailOnChange(input) {

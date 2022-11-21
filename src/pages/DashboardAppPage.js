@@ -22,8 +22,9 @@ import {
   AppCurrentSubject,
   AppConversionRates,
 } from '../sections/@dashboard/app';
+import { getCookie } from '../common/helpers/api/session';
+import { callWithToken } from 'src/common/helpers/utils/common';
 import { HOSTNAME, APIHOST } from '../config';
-
 // ----------------------------------------------------------------------
 
 export default function DashboardAppPage() {
@@ -35,9 +36,19 @@ export default function DashboardAppPage() {
   const mapInstance = useRef(null);
   const mapInfoWindow = useRef(null);
   const markerClusterer = useRef(null);
-
+  const [username, setUsername] = useState(null);
   const theme = useTheme();
   const { state } = useLocation();
+  let accessToken = getCookie("accessToken");
+
+  useEffect(() => {
+    if (accessToken !== undefined){
+    callWithToken('get', `${APIHOST}/api/user/info`, {})
+    .then((response) => {
+      setUsername(response.data.userName);
+    })}
+
+  }, [accessToken])
 
   useEffect(() => {
     // navigator.geolocation.getCurrentPosition((pos) => {
@@ -52,6 +63,7 @@ export default function DashboardAppPage() {
     script.src = "https://unpkg.com/@googlemaps/markerclusterer/dist/index.min.js";
     script.async = true;
     document.body.appendChild(script);
+  
     return () => {
       document.body.removeChild(script);
     }
@@ -73,7 +85,7 @@ export default function DashboardAppPage() {
       // markers can only be keyboard focusable when they have click listeners
       // open info window when marker is clicked
       marker.addListener("click", () => {
-        mapInfoWindow.current.setContent(`<a href="${HOSTNAME}/restaurant/${business.businessID}" target="_blank" rel="noopener noreferrer">${business.businessName}</a>`);
+        mapInfoWindow.current.setContent(`<a href="https://faceyelp.com/restaurant/${business.businessID}" target="_blank" rel="noopener noreferrer">${business.businessName}</a>`);
         mapInfoWindow.current.open(mapInstance.current, marker);
       });
       return marker;
@@ -99,7 +111,7 @@ export default function DashboardAppPage() {
         }).then((response) => {
           addRestaurantMarkers(response.data.businessList);
           markerClusterer.current.render();
-        }).catch((err) => console.log(err));
+        }).catch((err) => alert(err));
       }
     }
   }, [state, userCurrPosition]);

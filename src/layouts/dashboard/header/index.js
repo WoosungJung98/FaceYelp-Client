@@ -2,17 +2,22 @@ import PropTypes from 'prop-types';
 import { useState } from 'react';
 // @mui
 import { styled } from '@mui/material/styles';
-import { Box, Stack, AppBar, Toolbar, IconButton, List, ListItem, ListItemButton, ListItemText } from '@mui/material';
+import { Box, Stack, AppBar, Button, Toolbar, IconButton, List, ListItem, ListItemButton, ListItemText } from '@mui/material';
 // utils
+import { DocumentScanner, Login } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 import { bgBlur } from '../../../utils/cssStyles';
 // components
 import Iconify from '../../../components/iconify';
 //
 import Searchbar from './Searchbar';
 import AccountPopover from './AccountPopover';
-import LanguagePopover from './LanguagePopover';
 import NotificationsPopover from './NotificationsPopover';
 import { HOSTNAME } from '../../../config';
+import LogInButton from './LogInButton';
+import FriendsListButton from './FriendsListButton';
+import  { getCookie } from '../../../common/helpers/api/session'
+
 
 // ----------------------------------------------------------------------
 
@@ -47,19 +52,24 @@ Header.propTypes = {
 export default function Header({ onOpenNav }) {
   const [open, setOpen] = useState(false);
   const [restaurantList, setRestaurantList] = useState([]);
+  const navigate = useNavigate();
+  const toFriendsList = () =>
+  {
+    navigate('/friends', {replace: true});
+  }
 
+  const loginButton = getCookie("accessToken") === undefined || getCookie("refreshToken") === undefined ? (<LogInButton />) : (<AccountPopover />); 
   const getSearchSuggestListItems = () => {
     if(!open) return null;
     return restaurantList.map(item => (
       <ListItem disablePadding key={item.businessID}>
-        <ListItemButton onClick={()=>{window.open(`${HOSTNAME}/restaurant/${item.businessID}`, '_blank');}}>
+        <ListItemButton onClick={()=>{window.open(`https://faceyelp.com/restaurant/${item.businessID}`, '_blank');}}>
         <ListItemText primary={item.businessName} secondary={item.address} />
           <ListItemText primary={`${(item.distance * 0.000621371).toFixed(1)} mi`} />
         </ListItemButton>
       </ListItem>
     ));
   };
-
   return (
     <StyledRoot>
       <StyledToolbar>
@@ -76,7 +86,7 @@ export default function Header({ onOpenNav }) {
 
         <Searchbar open={open} setOpen={setOpen} setRestaurantList={setRestaurantList}/>
         <Box sx={{ flexGrow: 1 }} />
-
+        <FriendsListButton />
         <Stack
           direction="row"
           alignItems="center"
@@ -85,9 +95,9 @@ export default function Header({ onOpenNav }) {
             sm: 1,
           }}
         >
-          <LanguagePopover />
+          {loginButton}
           <NotificationsPopover />
-          <AccountPopover />
+          
         </Stack>
       </StyledToolbar>
       <Box sx={{ width: '100%', maxWidth: 500, color: '#5A5A5A'}}>
