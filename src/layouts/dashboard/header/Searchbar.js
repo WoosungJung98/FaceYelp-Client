@@ -78,7 +78,7 @@ export default function Searchbar({ open, setOpen, setRestaurantList }) {
       }
     }).then((response) =>
       setRestaurantList(response.data.businessList)
-    ).catch((err) => console.log(err));
+    ).catch((err) => alert(err));
   }, [inputRestaurant, userCurrPosition, setRestaurantList]);
 
   const handleOpen = () => {

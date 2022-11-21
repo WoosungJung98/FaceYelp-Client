@@ -16,7 +16,8 @@ export default function NavSection({ data = [], ...other }) {
     <Box {...other}>
       <List disablePadding sx={{ p: 0.3 }}>
         {data.map((item) => (
-          <NavItem key={item.title} item={item} />
+          <NavItem key={item.userName} item={item} />
+          
         ))}
       </List>
     </Box>
@@ -30,8 +31,6 @@ NavItem.propTypes = {
 };
 
 function NavItem({ item }) {
-  const { title, path, icon, info } = item;
-
   return (
     <StyledNavItem
       component={RouterLink}
@@ -44,11 +43,10 @@ function NavItem({ item }) {
         },
       }}
     >
-      <StyledNavItemIcon>{icon && icon}</StyledNavItemIcon>
+      <StyledNavItemIcon />
 
-      <ListItemText disableTypography primary={title} />
+      <ListItemText disableTypography primary={item.userName} />
 
-      {info && info}
     </StyledNavItem>
   );
 }

@@ -47,7 +47,6 @@ const Form = ({ handleClose }) => {
   const handleSubmit = e => {
     // username must be 3 characters
     e.preventDefault();
-    console.log(firstName, lastName, email, password, confirmPassword);
     let error = "";
     if (firstName.trim().length < 3 || lastName.trim().length < 3){
       error += "First and Last name should be 3 characters or more\n";
@@ -77,7 +76,6 @@ const Form = ({ handleClose }) => {
       "user_name": userName
     })
     .then((response)=> {
-      console.log(response);
       handleClose();
       navigate('/login', { replace: true});
       alert("Account Succesfully Created! Please log-in!")

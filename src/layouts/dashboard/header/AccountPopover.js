@@ -51,7 +51,6 @@ export default function AccountPopover() {
     .then((response) => {
       setUsername(response.data.userName);
       setEmail(response.data.email);
-      console.log(response.data.userName);
     })}
     }, [accessToken])
 

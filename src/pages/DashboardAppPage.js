@@ -40,7 +40,6 @@ export default function DashboardAppPage() {
   const theme = useTheme();
   const { state } = useLocation();
   let accessToken = getCookie("accessToken");
-  console.log(getCookie("accessToken"));
 
   useEffect(() => {
     if (accessToken !== undefined){
@@ -112,7 +111,7 @@ export default function DashboardAppPage() {
         }).then((response) => {
           addRestaurantMarkers(response.data.businessList);
           markerClusterer.current.render();
-        }).catch((err) => console.log(err));
+        }).catch((err) => alert(err));
       }
     }
   }, [state, userCurrPosition]);
