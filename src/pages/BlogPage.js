@@ -81,12 +81,12 @@ export default function BlogPage() {
         response.data.businessInfo.hours = objectMap(response.data.businessInfo.hours, hourMapFn);
         setRestaurantInfo(response.data.businessInfo);
       }
-    }).catch((err) => console.log(err));
+    }).catch((err) => alert(err));
     axios.get(`${APIHOST}/api/restaurant/${businessID}/photos`, {}).then((response) => {
       if ('businessPhotoList' in response.data){
         setBusinessPhotos(response.data.businessPhotoList);
       }
-    }).catch((err) => console.log(err));
+    }).catch((err) => alert(err));
   }, [businessID, hourMapFn]);
 
   const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -110,7 +110,7 @@ export default function BlogPage() {
   }));
 
   const restaurantImageListItems = useMemo(() => businessPhotos.map((photo) => {
-    const imgURL = `https://faceyelp.com/images/${photo.photo_id}.jpg`;
+    const imgURL = `https://faceyelp.com/business-images/${photo.photo_id}.jpg`;
     return (
       <ImageListItem key={photo.photo_id}>
         <img

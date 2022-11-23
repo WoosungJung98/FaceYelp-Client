@@ -9,7 +9,6 @@ import { Input, Slide, Button, IconButton, InputAdornment, ClickAwayListener } f
 import { bgBlur } from '../../../utils/cssStyles';
 // component
 import Iconify from '../../../components/iconify';
-import { callWithToken } from '../../../common/helpers/utils/common';
 import { APIHOST } from '../../../config';
 
 // ----------------------------------------------------------------------
@@ -78,7 +77,7 @@ export default function Searchbar({ open, setOpen, setRestaurantList }) {
       }
     }).then((response) =>
       setRestaurantList(response.data.businessList)
-    ).catch((err) => console.log(err));
+    ).catch((err) => alert(err));
   }, [inputRestaurant, userCurrPosition, setRestaurantList]);
 
   const handleOpen = () => {
@@ -117,7 +116,7 @@ export default function Searchbar({ open, setOpen, setRestaurantList }) {
               }
               sx={{ mr: 1, fontWeight: 'fontWeightBold' }}
               value={inputRestaurant}
-              onChange={(e) => setInputRestaurant(e.target.value)}
+              onChange={(e) => setInputRestaurant(e.target.value.replace(/^\s+/,""))}
               onKeyPress={(e) => {
                 if(e.key === "Enter") {
                   handleSearch();
