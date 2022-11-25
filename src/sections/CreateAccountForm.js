@@ -5,13 +5,13 @@ import { useNavigate } from 'react-router-dom';
 import { Link, Stack, IconButton, InputAdornment, TextField, Checkbox } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 // components
-import Iconify from '../../../components/iconify';
-import { setCookie } from '../../../common/helpers/api/session';
-import { APIHOST } from '../../../config';
+import Iconify from '../components/iconify';
+import { setCookie } from '../common/helpers/api/session';
+import { APIHOST } from '../config';
 
 // ----------------------------------------------------------------------
 
-export default function LoginForm() {
+export default function CreateAccountForm() {
   const inputEmail = useRef("");
   const inputPassword = useRef("");
   const [showPassword, setShowPassword] = useState(false);

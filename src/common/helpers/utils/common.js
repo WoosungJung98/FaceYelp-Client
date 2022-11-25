@@ -1,18 +1,22 @@
-import axios from 'axios'
-import { ctxRedirect } from '../auth/authUtil'
-import * as session from '../api/session'
+import axios from 'axios';
+import * as session from '../api/session';
+import { APIHOST } from '../../../config';
 
 
 export const tokenRefresh = async (ctx) => {
+  const axiosObject = {
+    method: 'post',
+    url: `${APIHOST}/api/user/login/refresh`,
+  }
   const refreshToken = session.getCookie('refreshToken', ctx);
+  axiosObject.headers = { Authorization: `Bearer ${refreshToken}` };
 
-  return axios.post(`https://faceyelp.com/api/user/login/refresh`, {},
-    { headers: { Authorization: `Bearer ${refreshToken}` } })
+  return axios(axiosObject)
     .then((response) => {
       session.setCookie('accessToken', response.data.accessToken);
       return response.data.accessToken;
     })
-    .catch((response) => ctxRedirect('/login', ctx))
+    .catch((err) => alert(err));
 }
 
 export const callWithToken = async (method, url, data, ctx) => {
@@ -33,9 +37,9 @@ export const callWithToken = async (method, url, data, ctx) => {
   return axios(axiosObject)
     .catch(error => {
       if ([401, 422].includes(error.response.status)) {
-        return tokenRefresh(ctx).then((newAccessToken) => {
-          return axios({ ...axiosObject, headers: { Authorization: `Bearer ${newAccessToken}` } })
-        })
+        return tokenRefresh(ctx).then((newAccessToken) =>
+          axios({ ...axiosObject, headers: { Authorization: `Bearer ${newAccessToken}` } })
+        )
       }
       return error.response;
     })
