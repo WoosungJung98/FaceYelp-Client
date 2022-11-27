@@ -17,7 +17,7 @@ import ListItemText from '@mui/material/ListItemText';
 import InboxIcon from '@mui/icons-material/MoveToInbox';
 import MailIcon from '@mui/icons-material/Mail';
 import { useTheme } from '@mui/material/styles';
-import { Grid, Container, Typography, Input, IconButton, InputAdornment, ClickAwayListener } from '@mui/material';
+import { Grid, Container, Typography, Input, IconButton, InputAdornment, ClickAwayListener, Avatar } from '@mui/material';
 // components
 import Iconify from '../components/iconify';
 // sections
@@ -155,6 +155,10 @@ export default function DashboardAppPage() {
   const getFriendListSidebar = () => {
     if(!isAuthenticated) return null;
     return (
+      <>
+      <Box sx={{ p: 1, justifyContent: 'space-between' }}>
+        <Divider orientation="vertical" />
+      </Box>
       <Box width="25%" sx={{ p: 1, justifyContent: 'space-between' }}>
         <Box sx={{ overflow: 'auto' }}>
           <ClickAwayListener onClickAway={handleClose}>
@@ -185,16 +189,15 @@ export default function DashboardAppPage() {
             {friendList !== undefined && friendList.map((friend, index) => (
               <ListItem key={friend.friendID} disablePadding>
                 <ListItemButton>
-                  <ListItemIcon>
-                    {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-                  </ListItemIcon>
-                  <ListItemText primary={friend.userName} />
+                  <Avatar src={`/assets/images/avatars/avatar_${friend.avatarNum}.jpg`} alt="photoURL" />
+                  <ListItemText primary={friend.userName} sx={{ marginLeft: '10px' }}/>
                 </ListItemButton>
               </ListItem>
             ))}
           </List>
         </Box>
       </Box>
+      </>
     );
   };
 
@@ -215,7 +218,7 @@ export default function DashboardAppPage() {
               bgcolor: '#F9FAFB',
             }}
           >
-            <div style={{ height: '60vh', width: '100%', float:"left",  paddingLeft: "30px", paddingRight:"30px" }}>
+            <div style={{ height: '70vh', width: '100%', float:"left",  paddingLeft: "30px", paddingRight:"30px" }}>
               <GoogleMapReact
                 bootstrapURLKeys={{
                   key: 'AIzaSyD_7nejf5R7RW9oJi55Y8Cu_LDr_picFxY',
@@ -228,7 +231,7 @@ export default function DashboardAppPage() {
             </div>
           </Box>
 
-          <Container maxWidth="xl">
+          {/* <Container maxWidth="xl">
             <Typography variant="h4" sx={{ mb: 5 }}>
               Hi, Welcome back
             </Typography>
@@ -412,7 +415,7 @@ export default function DashboardAppPage() {
                 />
               </Grid>
             </Grid>
-          </Container>
+          </Container> */}
         </Box>
         {getFriendListSidebar()}
       </Box>
