@@ -1,0 +1,10 @@
+.avatar-hovered {
+    border-style: solid;
+    border-width: thick;
+    border-color: green;
+}
+.avatar-clicked {
+    border-style: solid;
+    border-width: thick;
+    border-color: yellow;
+}

@@ -2,7 +2,7 @@ import axios from 'axios';
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 // @mui
-import { Link, Stack, IconButton, InputAdornment, TextField, Checkbox } from '@mui/material';
+import { Stack, IconButton, InputAdornment, TextField } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 // components
 import Iconify from '../../../components/iconify';
@@ -18,7 +18,15 @@ export default function LoginForm() {
 
   const navigate = useNavigate();
   
-  const handleClick = () => {
+  const handleSubmit = () => {
+    if(inputEmail.current.length < 3) {
+      alert("Email is invalid.");
+      return;
+    }
+    if(inputPassword.current.length < 8) {
+      alert("Password is invalid.");
+      return;
+    }
     axios.post(`${APIHOST}/api/user/login`, {
       email: inputEmail.current,
       password: inputPassword.current
@@ -26,7 +34,10 @@ export default function LoginForm() {
       setCookie("accessToken", response.data.accessToken);
       setCookie("refreshToken", response.data.refreshToken);
       navigate('/', { replace: true });
-    }).catch((err) => alert(err));
+    }).catch((err) => {
+      if(err.response.status === 401) alert(err.response.data.msg);
+      else alert(err);
+    });
   };
 
   return (
@@ -50,14 +61,7 @@ export default function LoginForm() {
         />
       </Stack>
 
-      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ my: 2 }}>
-        <Checkbox name="remember" label="Remember me" />
-        <Link variant="subtitle2" underline="hover">
-          Forgot password?
-        </Link>
-      </Stack>
-
-      <LoadingButton fullWidth size="large" type="submit" variant="contained" onClick={handleClick}>
+      <LoadingButton fullWidth size="large" type="submit" variant="contained" sx={{ my: 3 }} onClick={handleSubmit}>
         Login
       </LoadingButton>
     </>
