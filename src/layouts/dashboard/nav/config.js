@@ -32,9 +32,9 @@ const navConfig = [
     icon: icon('ic_lock'),
   },
   {
-    title: 'Not found',
-    path: '/404',
-    icon: icon('ic_disabled'),
+    title: 'create account',
+    path: '/create-account',
+    icon: icon('ic_create_account'),
   },
 ];
 

@@ -110,7 +110,7 @@ export default function BlogPage() {
   }));
 
   const restaurantImageListItems = useMemo(() => businessPhotos.map((photo) => {
-    const imgURL = `https://faceyelp.com/business-images/${photo.photo_id}.jpg`;
+    const imgURL = `${APIHOST}/business-images/${photo.photo_id}.jpg`;
     return (
       <ImageListItem key={photo.photo_id}>
         <img
