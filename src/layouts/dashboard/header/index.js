@@ -13,6 +13,7 @@ import AccountPopover from './AccountPopover';
 import LanguagePopover from './LanguagePopover';
 import NotificationsPopover from './NotificationsPopover';
 import { HOSTNAME } from '../../../config';
+import { getCookie } from '../../../common/helpers/api/session';
 
 // ----------------------------------------------------------------------
 
@@ -47,6 +48,7 @@ Header.propTypes = {
 export default function Header({ onOpenNav }) {
   const [open, setOpen] = useState(false);
   const [restaurantList, setRestaurantList] = useState([]);
+  const isAuthenticated = getCookie("refreshToken") !== undefined;
 
   const getSearchSuggestListItems = () => {
     if(!open) return null;
@@ -75,6 +77,7 @@ export default function Header({ onOpenNav }) {
         </IconButton>
 
         <Searchbar open={open} setOpen={setOpen} setRestaurantList={setRestaurantList}/>
+        <div style={{color: 'grey'}}> Search Restaurants </div>
         <Box sx={{ flexGrow: 1 }} />
 
         <Stack
@@ -86,8 +89,12 @@ export default function Header({ onOpenNav }) {
           }}
         >
           <LanguagePopover />
-          <NotificationsPopover />
-          <AccountPopover />
+          {isAuthenticated && (
+            <>
+            <NotificationsPopover />
+            <AccountPopover />
+            </>
+          )}
         </Stack>
       </StyledToolbar>
       <Box sx={{ width: '100%', maxWidth: 500, color: '#5A5A5A'}}>

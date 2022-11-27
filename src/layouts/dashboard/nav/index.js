@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 // @mui
 import { styled, alpha } from '@mui/material/styles';
@@ -13,7 +13,10 @@ import Logo from '../../../components/logo';
 import Scrollbar from '../../../components/scrollbar';
 import NavSection from '../../../components/nav-section';
 //
-import navConfig from './config';
+import getNavConfig from './config';
+import { getCookie } from '../../../common/helpers/api/session';
+import { callWithToken } from '../../../common/helpers/utils/common';
+import { APIHOST } from '../../../config';
 
 // ----------------------------------------------------------------------
 
@@ -35,9 +38,18 @@ Nav.propTypes = {
 };
 
 export default function Nav({ openNav, onCloseNav }) {
+  const [userDetailInfo, setUserDetailInfo] = useState(null);
   const { pathname } = useLocation();
-
   const isDesktop = useResponsive('up', 'lg');
+  const isAuthenticated = getCookie("refreshToken") !== undefined;
+
+  useEffect(() => {
+    if(isAuthenticated) {
+      callWithToken('get', `${APIHOST}/api/user/info`, {}).then((response) => {
+        setUserDetailInfo(response.data.userInfo);
+      }).catch((err) => alert(err));
+    }
+  }, [isAuthenticated]);
 
   useEffect(() => {
     if (openNav) {
@@ -45,6 +57,27 @@ export default function Nav({ openNav, onCloseNav }) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
+
+  const getAccountBadge = () => {
+    if(!isAuthenticated) return null;
+    if(userDetailInfo === null) return null;
+    const imgURL = `/assets/images/avatars/avatar_${userDetailInfo.avatarNum}.jpg`;
+    return (
+      <Box sx={{ mb: 5, mx: 2.5 }}>
+        <Link underline="none">
+          <StyledAccount>
+            <Avatar src={imgURL} alt="photoURL" />
+
+            <Box sx={{ ml: 2 }}>
+              <Typography variant="subtitle2" sx={{ color: 'text.primary' }}>
+                {userDetailInfo.userName}
+              </Typography>
+            </Box>
+          </StyledAccount>
+        </Link>
+      </Box>
+    );
+  };
 
   const renderContent = (
     <Scrollbar
@@ -57,25 +90,9 @@ export default function Nav({ openNav, onCloseNav }) {
         <Logo />
       </Box>
 
-      <Box sx={{ mb: 5, mx: 2.5 }}>
-        <Link underline="none">
-          <StyledAccount>
-            <Avatar src={account.photoURL} alt="photoURL" />
+      {getAccountBadge()}
 
-            <Box sx={{ ml: 2 }}>
-              <Typography variant="subtitle2" sx={{ color: 'text.primary' }}>
-                {account.displayName}
-              </Typography>
-
-              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                {account.role}
-              </Typography>
-            </Box>
-          </StyledAccount>
-        </Link>
-      </Box>
-
-      <NavSection data={navConfig} />
+      <NavSection data={getNavConfig()} />
 
       <Box sx={{ flexGrow: 1 }} />
     </Scrollbar>
