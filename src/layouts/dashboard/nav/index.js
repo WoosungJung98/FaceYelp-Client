@@ -72,6 +72,9 @@ export default function Nav({ openNav, onCloseNav }) {
               <Typography variant="subtitle2" sx={{ color: 'text.primary' }}>
                 {userDetailInfo.userName}
               </Typography>
+              <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '10px' }}>
+                {userDetailInfo.userID}
+              </Typography>
             </Box>
           </StyledAccount>
         </Link>
