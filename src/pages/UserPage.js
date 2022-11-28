@@ -33,6 +33,8 @@ import { UserListHead, UserListToolbar } from '../sections/@dashboard/user';
 import USERLIST from '../_mock/user';
 import { APIHOST } from '../config';
 
+import { callWithToken } from '../common/helpers/utils/common';
+
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
@@ -40,7 +42,7 @@ const TABLE_HEAD = [
   { id: 'company', label: 'Email', alignRight: false },
   { id: 'role', label: 'User ID', alignRight: false },
   { id: 'isVerified', label: 'Review Count', alignRight: false },
-  { id: 'status', label: 'Status', alignRight: false },
+  { id: 'status', label: 'Add Friend', alignRight: false },
   { id: '' },
 ];
 
@@ -85,6 +87,7 @@ export default function UserPage() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [fetchedUserList, setFetchedUserList] = useState([]);
   const [userListTotal, setUserListTotal] = useState(0);
+  const [friendID, setFriendID] = useState([]);
   
   useEffect(() => {
     const params = {
@@ -102,43 +105,14 @@ export default function UserPage() {
     }).catch((err) => alert(err));
   }, [filterName, page, rowsPerPage]);
 
-  const handleOpenMenu = (event) => {
+  const handleOpenMenu = (event, id) => {
     setOpen(event.currentTarget);
+    console.log(id);
   };
 
   const handleCloseMenu = () => {
     setOpen(null);
   };
-
-  // const handleRequestSort = (event, property) => {
-  //   const isAsc = orderBy === property && order === 'asc';
-  //   setOrder(isAsc ? 'desc' : 'asc');
-  //   setOrderBy(property);
-  // };
-
-  // const handleSelectAllClick = (event) => {
-  //   if (event.target.checked) {
-  //     const newSelecteds = USERLIST.map((n) => n.name);
-  //     setSelected(newSelecteds);
-  //     return;
-  //   }
-  //   setSelected([]);
-  // };
-
-  // const handleClick = (event, name) => {
-  //   const selectedIndex = selected.indexOf(name);
-  //   let newSelected = [];
-  //   if (selectedIndex === -1) {
-  //     newSelected = newSelected.concat(selected, name);
-  //   } else if (selectedIndex === 0) {
-  //     newSelected = newSelected.concat(selected.slice(1));
-  //   } else if (selectedIndex === selected.length - 1) {
-  //     newSelected = newSelected.concat(selected.slice(0, -1));
-  //   } else if (selectedIndex > 0) {
-  //     newSelected = newSelected.concat(selected.slice(0, selectedIndex), selected.slice(selectedIndex + 1));
-  //   }
-  //   setSelected(newSelected);
-  // };
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -153,6 +127,20 @@ export default function UserPage() {
     setPage(0);
     setFilterName(event.target.value);
   };
+  const addFriend = (event) =>{
+    console.log(event)
+  }
+
+  const addUser = (event, friendid) => {
+    callWithToken('post', `${APIHOST}/api/friend/add`, 
+    {
+      friend_id: friendid
+    })
+    .then((response) =>{alert(response.data.msg)})
+    .catch((err) => alert(err))
+    
+  
+  }
 
   const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - userListTotal) : 0;
 
@@ -173,10 +161,6 @@ export default function UserPage() {
 
       return (
         <TableRow hover key={id} tabIndex={-1} role="checkbox" selected={selectedUser}>
-          {/* <TableCell padding="checkbox">
-            <Checkbox checked={selectedUser} onChange={(event) => handleClick(event, name)} />
-          </TableCell> */}
-
           <TableCell component="th" scope="row" padding="none">
             <Stack direction="row" alignItems="center" spacing={2}>
               <Avatar alt={name} src={avatarUrl} sx={{ marginLeft: '15px' }} />
@@ -192,12 +176,12 @@ export default function UserPage() {
 
           <TableCell align="left">{isVerified}</TableCell>
 
-          <TableCell align="left">
-            <Label color={(status === 'banned' && 'error') || 'success'}>{sentenceCase(status)}</Label>
+          <TableCell component="th" scope="row" padding="none">
+          <Button variant="contained" onClick = {(event)=>  addUser(event, row.userID)} onChange={(event) => addUser(event, row.friendID)} startIcon={<Iconify icon="eva:plus-fill" />}>Add User</Button>
           </TableCell>
-
+          
           <TableCell align="right">
-            <IconButton size="large" color="inherit" onClick={handleOpenMenu}>
+            <IconButton size="large" color="inherit" onClick={(event) => handleOpenMenu(event, id)}>
               <Iconify icon={'eva:more-vertical-fill'} />
             </IconButton>
           </TableCell>
@@ -307,7 +291,9 @@ export default function UserPage() {
           <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
           Edit
         </MenuItem>
-
+        <MenuItem onClick={(event)=>{addFriend(event)}}>
+        Add Friend
+        </MenuItem>
         <MenuItem sx={{ color: 'error.main' }}>
           <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
           Delete

@@ -18,5 +18,6 @@ export function useInterval(callback, delay) {
         clearInterval(id);
       }
     }
+    return null
   }, [callback, delay]);
 }
