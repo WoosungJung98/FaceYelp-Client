@@ -3,12 +3,18 @@ import { set, sub } from 'date-fns';
 import { noCase } from 'change-case';
 import { faker } from '@faker-js/faker';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 // @mui
 import {
   Box,
   List,
   Badge,
   Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
   Avatar,
   Tooltip,
   Divider,
@@ -20,76 +26,83 @@ import {
   ListItemAvatar,
   ListItemButton,
 } from '@mui/material';
+import { callWithToken } from '../../../common/helpers/utils/common'
 // utils
 import { fToNow } from '../../../utils/formatTime';
 // components
 import Iconify from '../../../components/iconify';
 import Scrollbar from '../../../components/scrollbar';
+import { useInterval } from '../../../hooks/useInterval';
+import { APIHOST } from '../../../config';
 
 // ----------------------------------------------------------------------
-
-const NOTIFICATIONS = [
-  {
-    id: faker.datatype.uuid(),
-    title: 'Your order is placed',
-    description: 'waiting for shipping',
-    avatar: null,
-    type: 'order_placed',
-    createdAt: set(new Date(), { hours: 10, minutes: 30 }),
-    isUnRead: true,
-  },
-  {
-    id: faker.datatype.uuid(),
-    title: faker.name.fullName(),
-    description: 'answered to your comment on the Minimal',
-    avatar: '/assets/images/avatars/avatar_2.jpg',
-    type: 'friend_interactive',
-    createdAt: sub(new Date(), { hours: 3, minutes: 30 }),
-    isUnRead: true,
-  },
-  {
-    id: faker.datatype.uuid(),
-    title: 'You have new message',
-    description: '5 unread messages',
-    avatar: null,
-    type: 'chat_message',
-    createdAt: sub(new Date(), { days: 1, hours: 3, minutes: 30 }),
-    isUnRead: false,
-  },
-  {
-    id: faker.datatype.uuid(),
-    title: 'You have new mail',
-    description: 'sent from Guido Padberg',
-    avatar: null,
-    type: 'mail',
-    createdAt: sub(new Date(), { days: 2, hours: 3, minutes: 30 }),
-    isUnRead: false,
-  },
-  {
-    id: faker.datatype.uuid(),
-    title: 'Delivery processing',
-    description: 'Your order is being shipped',
-    avatar: null,
-    type: 'order_shipped',
-    createdAt: sub(new Date(), { days: 3, hours: 3, minutes: 30 }),
-    isUnRead: false,
-  },
-];
-
 export default function NotificationsPopover() {
-  const [notifications, setNotifications] = useState(NOTIFICATIONS);
+
+const [tempNotif, setTempNotif] = useState(null);
+const [rerender, setRerender] = useState(false);
+const [open, setOpen] = useState(null);
+const [notifications, setNotifications] = useState([]);
+const [openDialogue, setOpenDialogue] = useState(false);
+const [tempFriendRequestID, setTempFriendRequestID] = useState(null);
+
+useInterval(async () => {
+
+  callWithToken('get', `${APIHOST}/api/friend/requests`, {}).then((response) => {
+
+    setNotifications(response.data.friendRequestList.map(makeNotifs));
+    function makeNotifs(obj) {
+    return {
+    id: obj.friendRequestID,
+    title: `${obj.userName} added you as a Friend!`,
+    description: `${obj.timeDiff} minutes ago`,
+    avatar: null,
+    type: null,
+    createdAt: null,
+    isUnRead: true,
+    name: obj.userName
+  }
+}
+  }).catch((err) => alert(err));
+}, 3000)
+
+  const navigate = useNavigate();
+  const handleClickOpen = (notification) => {
+    setTempNotif(notification.name);
+    setTempFriendRequestID(notification.id);
+    setOpenDialogue(true);
+  };
+  const handleConfirm = () =>{
+    callWithToken('post', `${APIHOST}/api/friend/accept-request`, {friend_request_id: tempFriendRequestID}).then((response) => {
+    alert("Succesfully accepted friend request")
+    handleClose()
+    navigate('/', { replace: true});
+    }).catch((err) => {alert(err); handleClose()})
+
+  }
+  const handleIgnore = () =>{
+    callWithToken('post', `${APIHOST}/api/friend/ignore-request`, {friend_request_id: tempFriendRequestID}).then((response) => {
+      alert("Succesfully accepted friend request")
+      handleClose()
+      navigate('/', { replace: true});
+      }).catch((err) => {alert(err); handleClose()})
+    
+    //  axios call to the api with tempFriendRequestID
+  }
+  const handleClose = () => {
+    setOpenDialogue(false);
+  };
 
   const totalUnRead = notifications.filter((item) => item.isUnRead === true).length;
 
-  const [open, setOpen] = useState(null);
 
   const handleOpen = (event) => {
     setOpen(event.currentTarget);
   };
 
-  const handleClose = () => {
+  const handleClosePop = () => {
     setOpen(null);
   };
+
 
   const handleMarkAllAsRead = () => {
     setNotifications(
@@ -99,6 +112,7 @@ export default function NotificationsPopover() {
       }))
     );
   };
+
 
   return (
     <>
@@ -111,7 +125,7 @@ export default function NotificationsPopover() {
       <Popover
         open={Boolean(open)}
         anchorEl={open}
-        onClose={handleClose}
+        onClose={handleClosePop}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
         PaperProps={{
@@ -147,11 +161,37 @@ export default function NotificationsPopover() {
             subheader={
               <ListSubheader disableSticky sx={{ py: 1, px: 2.5, typography: 'overline' }}>
                 New
-              </ListSubheader>
-            }
+              </ListSubheader>}
+            
           >
-            {notifications.slice(0, 2).map((notification) => (
+            {notifications.map((notification) => (
+            <Box>
+              <ListItemButton onClick={()=>handleClickOpen(notification)}>
               <NotificationItem key={notification.id} notification={notification} />
+              </ListItemButton>
+      <Dialog
+        open={openDialogue}
+        onClose={handleClose}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          {`Do you want to add ${tempNotif} as a friend?`}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Let {tempNotif} be your friend on FaceYelp and allow them to request 
+            meals to you. 
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleIgnore}>Ignore</Button>
+          <Button onClick={handleConfirm} autoFocus>
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
+              </Box>
             ))}
           </List>
 
@@ -164,7 +204,10 @@ export default function NotificationsPopover() {
             }
           >
             {notifications.slice(2, 5).map((notification) => (
+              <ListItemButton >
               <NotificationItem key={notification.id} notification={notification} />
+              
+              </ListItemButton>
             ))}
           </List>
         </Scrollbar>

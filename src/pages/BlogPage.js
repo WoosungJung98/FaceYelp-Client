@@ -5,7 +5,16 @@ import { Grid} from '@mui/material';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import * as React from 'react';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import ClickAwayListener from '@mui/material/ClickAwayListener';
 import ImageList from '@mui/material/ImageList';
+import Input from '@mui/material/Input';
+import InputAdornment from '@mui/material/InputAdornment'
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemText from '@mui/material/ListItemText';
+import IconButton from '@mui/material/IconButton';
 import ImageListItem from '@mui/material/ImageListItem';
 import ImageListItemBar from '@mui/material/ImageListItemBar';
 import GoogleMapReact from 'google-map-react';
@@ -20,9 +29,36 @@ import Paper from '@mui/material/Paper';
 import Chip from '@mui/material/Chip'
 import Rating from '@mui/material/Rating'
 import { Divider, Avatar} from "@material-ui/core";
+import Iconify from '../components/iconify';
 import { APIHOST } from '../config';
+import { getCookie } from '../common/helpers/api/session';
+import { callWithToken } from '../common/helpers/utils/common';
+
 // ----------------------------------------------------------------------
 export default function BlogPage() {
+  const isAuthenticated = getCookie("refreshToken") !== undefined;
+  const [inputFriend, setInputFriend] = useState('');
+  const [friendList, setFriendList] = useState([]);
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if(isAuthenticated) {
+      const params = inputFriend.length >= 3 ? {friend_name: inputFriend} : {};
+      callWithToken('get', `${APIHOST}/api/friend/list`, params).then((response) => {
+        setFriendList(response.data.friendList);
+      }).catch((err) => alert(err));
+    }
+  }, [inputFriend, isAuthenticated]);
+
+  const handleOpen = () => {
+    setOpen(!open);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+    setInputFriend('');
+  };
+
   const { businessID } = useParams();
   const [restaurantInfo, setRestaurantInfo] = useState({
       "address": "empty",
@@ -41,7 +77,7 @@ export default function BlogPage() {
       "stars": null,
       "state": "empty"
   });
-
+  
   const [businessPhotos, setBusinessPhotos] = useState([]);
 
   // returns a new object with the values at each key mapped using mapFn(value)
@@ -195,6 +231,120 @@ export default function BlogPage() {
       </StyledTableRow>
     ));
   }, [restaurantInfo.hours]);
+  const isAuthenticatedPage = () => {
+    if(!isAuthenticated)
+    {return (
+      <Box
+      sx={{
+        display: 'flex',
+        justifyContent: 'center',
+        p: 2,
+        m: 1,
+        bgcolor: '#F9FAFB',
+      }}
+    >
+      <div style={{ height: '42vh', width: '50%', paddingRight:"30px" }} >
+        {getGoogleMapLoc()}
+      </div>
+      <div style={{ height: '38vh', width: '30%', paddingLeft: "30px" }}>
+        <TableContainer component={Paper}>
+          <Table sx={{ minWidth: 10 }} style={{alignSelf:"flex-end"}} aria-label="customized table" size="small">
+            <TableHead>
+              <TableRow>
+                <StyledTableCell> Days</StyledTableCell>
+                <StyledTableCell align="left">Hours</StyledTableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {restaurantHoursTableItems}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </div>
+    </Box>
+      );}
+    return(
+    <Box
+      sx={{
+        display: 'flex',
+        p: 3,
+        m: 1,
+        bgcolor: '#F9FAFB',
+        flexDirection:'column',
+        flexWrap: 'wrap',
+        justifyContent: 'space-around',
+        height: 550
+      }}
+    >
+      <Box style={{order: 1, height: '40vh', width: '60%', p: 1, m:1 }} >
+        {getGoogleMapLoc()}
+      </Box>
+      <Box style={{ order: 2, height: '30vh', width: '60%', p:1, m:1 }}>
+        <TableContainer component={Paper}>
+          <Table sx={{ minWidth: 10 }} style={{alignSelf:"flex-end"}} aria-label="customized table" size="small">
+            <TableHead>
+              <TableRow>
+                <StyledTableCell> Days</StyledTableCell>
+                <StyledTableCell align="left">Hours</StyledTableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {restaurantHoursTableItems}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Box>
+      {getFriendListSidebar()}
+    </Box>
+    
+
+  )}
+  
+  const getFriendListSidebar = () => {
+    return (
+      <>
+      <Box sx={{ p: 1, width:"25%", order: 3}}>
+        <Box sx={{ overflow: 'auto' }}>
+          <ClickAwayListener onClickAway={handleClose}>
+            <Box>
+              {!open && (
+                <IconButton onClick={handleOpen} sx={{ height: 30 }}>
+                  <Iconify icon="eva:search-fill" />
+                </IconButton>
+              )}
+              {open && (
+                <Input
+                  autoFocus
+                  disableUnderline
+                  placeholder="Search Friend…"
+                  startAdornment={
+                    <InputAdornment position="start">
+                      <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled', width: 20, height: 20 }} />
+                    </InputAdornment>
+                  }
+                  sx={{ mr: 1, fontWeight: 'fontWeightBold', height: 30 }}
+                  value={inputFriend}
+                  onChange={(e) => setInputFriend(e.target.value.replace(/^\s+/,""))}
+                />
+              )}
+            </Box>
+          </ClickAwayListener>
+          <List style={{maxHeight: 500, overflow:'auto'}}>
+            {friendList !== undefined && friendList.map((friend, index) => (
+              <ListItem key={friend.friendID} disablePadding>
+                <ListItemButton>
+                  <Avatar src={`/assets/images/avatars/avatar_${friend.avatarNum}.jpg`} alt="photoURL" />
+                  <ListItemText primary={friend.userName} sx={{ marginLeft: '10px' }}/>
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </List>
+        </Box>
+      </Box>
+      </>
+    );
+  };
+
 
   return (
     <>
@@ -246,37 +396,7 @@ export default function BlogPage() {
       <Rating name="read-only" value={restaurantInfo.stars} readOnly />
     </Box>
     {restaurantImageList()}
-    {/* <div style={{width:"100%", float:"left", paddingLeft: "5px", paddingTop:"10px"}}>
-      Open: Closes at 10pm NEED TO CHANGE
-    </div> */}
-    <Box
-      sx={{
-        display: 'flex',
-        justifyContent: 'center',
-        p: 2,
-        m: 1,
-        bgcolor: '#F9FAFB',
-      }}
-    >
-      <div style={{ height: '42vh', width: '50%', paddingRight:"30px" }} >
-        {getGoogleMapLoc()}
-      </div>
-      <div style={{ height: '38vh', width: '30%', paddingLeft: "30px" }}>
-        <TableContainer component={Paper}>
-          <Table sx={{ minWidth: 10 }} style={{alignSelf:"flex-end"}} aria-label="customized table" size="small">
-            <TableHead>
-              <TableRow>
-                <StyledTableCell> Days</StyledTableCell>
-                <StyledTableCell align="left">Hours</StyledTableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {restaurantHoursTableItems}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </div>
-    </Box>
+    {isAuthenticatedPage()}
     <Box
       sx={{
         display: 'flex',
