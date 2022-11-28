@@ -301,7 +301,6 @@ export default function BlogPage() {
   )}
   
   const getFriendListSidebar = () => {
-    //  console.log(isAuthenticated)
     return (
       <>
       <Box sx={{ p: 1, width:"25%", order: 3}}>

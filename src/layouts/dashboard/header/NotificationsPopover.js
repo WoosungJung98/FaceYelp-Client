@@ -44,9 +44,9 @@ const [tempNotif, setTempNotif] = useState(null);
 const [rerender, setRerender] = useState(false);
 
 useInterval(async () => {
-  console.log("axios call");
+
   callWithToken('get', `${APIHOST}/api/friend/requests`, {}).then((response) => {
-    console.log(response.data.friendRequestList);
+
     setNotifications(response.data.friendRequestList.map(makeNotifs));
     function makeNotifs(obj) {
     return {
@@ -113,9 +113,7 @@ useInterval(async () => {
       }))
     );
   };
-  const onClick= () => {
-    console.log("hello")
-  }
+
 
   return (
     <>
@@ -207,8 +205,8 @@ useInterval(async () => {
             }
           >
             {notifications.slice(2, 5).map((notification) => (
-              <ListItemButton onClick={()=>console.log("hello1")}>
-              <NotificationItem key={notification.id} notification={notification} onclick={console.log("hello")} />
+              <ListItemButton >
+              <NotificationItem key={notification.id} notification={notification} />
               
               </ListItemButton>
             ))}

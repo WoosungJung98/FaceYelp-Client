@@ -107,7 +107,6 @@ export default function UserPage() {
 
   const handleOpenMenu = (event, id) => {
     setOpen(event.currentTarget);
-    console.log(id);
   };
 
   const handleCloseMenu = () => {
@@ -128,7 +127,6 @@ export default function UserPage() {
     setFilterName(event.target.value);
   };
   const addFriend = (event) =>{
-    console.log(event)
   }
 
   const addUser = (event, friendid) => {
