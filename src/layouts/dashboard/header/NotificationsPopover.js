@@ -38,10 +38,12 @@ import { APIHOST } from '../../../config';
 // ----------------------------------------------------------------------
 export default function NotificationsPopover() {
 
-
-
 const [tempNotif, setTempNotif] = useState(null);
 const [rerender, setRerender] = useState(false);
+const [open, setOpen] = useState(null);
+const [notifications, setNotifications] = useState([]);
+const [openDialogue, setOpenDialogue] = useState(false);
+const [tempFriendRequestID, setTempFriendRequestID] = useState(null);
 
 useInterval(async () => {
 
@@ -63,8 +65,6 @@ useInterval(async () => {
   }).catch((err) => alert(err));
 }, 3000)
 
-  const [openDialogue, setOpenDialogue] = useState(false);
-  const [tempFriendRequestID, setTempFriendRequestID] = useState(null);
   const navigate = useNavigate();
   const handleClickOpen = (notification) => {
     setTempNotif(notification.name);
@@ -92,9 +92,8 @@ useInterval(async () => {
     setOpenDialogue(false);
   };
 
-  const [notifications, setNotifications] = useState([]);
   const totalUnRead = notifications.filter((item) => item.isUnRead === true).length;
-  const [open, setOpen] = useState(null);
+
 
   const handleOpen = (event) => {
     setOpen(event.currentTarget);

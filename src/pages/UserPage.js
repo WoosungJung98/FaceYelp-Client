@@ -134,8 +134,8 @@ export default function UserPage() {
     {
       friend_id: friendid
     })
-    .then((response) =>{alert(response.data.msg)})
-    .catch((err) => alert(err))
+    .then((response) =>{alert(response.data.msg);})
+    .catch((err) => alert(err));
     
   
   }
