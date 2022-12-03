@@ -21,6 +21,11 @@ const getNavConfig = () => {
         title: 'find friends',
         path: '/dashboard/user',
         icon: icon('ic_user'),
+      },
+      {
+        title: 'Upcoming Meals',
+        path: '/dashboard/upcoming-meals',
+        icon: icon('ic_blog'),
       }
     );
   }

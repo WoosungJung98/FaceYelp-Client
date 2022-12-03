@@ -3,8 +3,8 @@ import axios from 'axios';
 import { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { faker } from '@faker-js/faker';
 import GoogleMapReact from 'google-map-react';
+
 // @mui
 import CssBaseline from '@mui/material/CssBaseline';
 import Box from '@mui/material/Box';
@@ -12,26 +12,13 @@ import List from '@mui/material/List';
 import Divider from '@mui/material/Divider';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
-import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import InboxIcon from '@mui/icons-material/MoveToInbox';
-import MailIcon from '@mui/icons-material/Mail';
 import { useTheme } from '@mui/material/styles';
-import { Grid, Container, Typography, Input, IconButton, InputAdornment, ClickAwayListener, Avatar } from '@mui/material';
-// components
+import { Input, IconButton, InputAdornment, ClickAwayListener, 
+        Avatar } from '@mui/material';
+        // components
 import Iconify from '../components/iconify';
 // sections
-import {
-  AppTasks,
-  AppNewsUpdate,
-  AppOrderTimeline,
-  AppCurrentVisits,
-  AppWebsiteVisits,
-  AppTrafficBySite,
-  AppWidgetSummary,
-  AppCurrentSubject,
-  AppConversionRates,
-} from '../sections/@dashboard/app';
 import { getCookie } from '../common/helpers/api/session';
 import { callWithToken } from '../common/helpers/utils/common';
 import { HOSTNAME, APIHOST } from '../config';
@@ -39,6 +26,8 @@ import { HOSTNAME, APIHOST } from '../config';
 // ----------------------------------------------------------------------
 
 export default function DashboardAppPage() {
+  
+  
   const [userCurrPosition, setUserCurrPosition] = useState({
     latitude: 39.9,
     longitude: -75.2
@@ -51,7 +40,7 @@ export default function DashboardAppPage() {
   const mapInstance = useRef(null);
   const mapInfoWindow = useRef(null);
   const markerClusterer = useRef(null);
-
+  
   const theme = useTheme();
   const { state } = useLocation();
 
@@ -192,6 +181,7 @@ export default function DashboardAppPage() {
                   <Avatar src={`/assets/images/avatars/avatar_${friend.avatarNum}.jpg`} alt="photoURL" />
                   <ListItemText primary={friend.userName} sx={{ marginLeft: '10px' }}/>
                 </ListItemButton>
+                
               </ListItem>
             ))}
           </List>

@@ -1,7 +1,8 @@
 import axios from 'axios';
 import { Helmet } from 'react-helmet-async';
-import { useParams } from 'react-router-dom';
-import { Grid} from '@mui/material';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Grid,  Stack, TextField, Dialog, DialogTitle, 
+  DialogContent, DialogContentText, DialogActions, Pagination, Typography } from '@mui/material';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import * as React from 'react';
 import Box from '@mui/material/Box';
@@ -29,6 +30,11 @@ import Paper from '@mui/material/Paper';
 import Chip from '@mui/material/Chip'
 import Rating from '@mui/material/Rating'
 import { Divider, Avatar} from "@material-ui/core";
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { DesktopDatePicker, TimePicker } from '@mui/x-date-pickers';
+import dayjs from 'dayjs';
+import { LocalConvenienceStoreOutlined } from '@mui/icons-material';
 import Iconify from '../components/iconify';
 import { APIHOST } from '../config';
 import { getCookie } from '../common/helpers/api/session';
@@ -40,6 +46,34 @@ export default function BlogPage() {
   const [inputFriend, setInputFriend] = useState('');
   const [friendList, setFriendList] = useState([]);
   const [open, setOpen] = useState(false);
+  const [value, setValue] = useState(dayjs());
+  const [tempNotif, setTempNotif] = useState(null);
+  const [notifications, setNotifications] = useState([]);
+  const [openDialogue, setOpenDialogue] = useState(false);
+  const [tempFriendRequestID, setTempFriendRequestID] = useState(null);
+  const [reviews, setReviews] = useState([]);
+  const [page, setPage] = useState(1);
+  const [reviewsLength, setReviewsLength] = useState(10);
+  const [reviewInput, setReviewInput] = useState("");
+  const [starCount, setStarCount] = useState(0);
+
+  const navigate = useNavigate();
+
+  useEffect(()=>{
+    axios.get(`${APIHOST}/api/restaurant/${businessID}/reviews`, {
+    params: {
+      page,
+      length: 5
+    }}).then((response) => {
+      console.log('hello')
+      console.log(response)
+      setReviews(response.data.review.list);
+      setReviewsLength(response.data.review.totalLength);
+      console.log(reviewsLength)
+      console.log('christian')
+    }).catch((err) => alert(err));
+
+  }, [page])
 
   useEffect(() => {
     if(isAuthenticated) {
@@ -54,11 +88,70 @@ export default function BlogPage() {
     setOpen(!open);
   };
 
+  const handleChange = (newValue) => {
+    setValue(newValue);
+  };
+
+  const handleChangePage = (event, newValue) => {
+    console.log(newValue);
+    setPage(newValue);
+  }; 
+  const handleChangeReview = (event) => {
+    setReviewInput(event.target.value);
+  }; 
+
   const handleClose = () => {
     setOpen(false);
     setInputFriend('');
   };
 
+
+  const handleClickOpen = (friendID, name) => {
+    setTempNotif(name);
+    setTempFriendRequestID(friendID);
+    setOpenDialogue(true);
+  };
+
+  const handleSendMealRequest = () => {
+    const date = `${value.$y}-${value.$M + 1}-${value.$D} ${value.$H}:${value.$m}:${value.$s}`;
+    console.log(date)
+    console.log(businessID)
+    console.log(tempFriendRequestID)
+    console.log(tempNotif)
+    console.log(restaurantInfo.businessName)
+
+
+    callWithToken('post', `${APIHOST}/api/meal/send-request`,
+    {friend_id: `${tempFriendRequestID}`, meal_at: "2022-12-19 12:10:10", restaurant_id: `${businessID}`})
+    .then((response) => {
+      alert(`Successfully sent a meal request to ${tempNotif}:
+           Time: ${date} 
+           Location: ${restaurantInfo.businessName}, ${restaurantInfo.address}`);
+      setOpenDialogue(false);
+    }).catch((err) => 
+    {alert(err);
+    setOpenDialogue(false)});
+  }
+
+
+  
+  const handleCancel = () => {
+    setOpenDialogue(false);
+  }
+  const submitReview = () =>{
+    console.log(reviewInput);
+    console.log(starCount);
+    callWithToken('post', `${APIHOST}/api/restaurant/${businessID}/review-create`,
+    {
+      body: reviewInput,
+      stars: starCount
+    }).then((response) => {
+      alert("Successfully created a review");
+      navigate(`/restaurant/${businessID}`, { replace: true });
+    }).catch((err) => alert(err));
+  }
+
+  
   const { businessID } = useParams();
   const [restaurantInfo, setRestaurantInfo] = useState({
       "address": "empty",
@@ -231,6 +324,31 @@ export default function BlogPage() {
       </StyledTableRow>
     ));
   }, [restaurantInfo.hours]);
+
+  const makeReviews = (review) => {
+    return <Box>
+    <Grid container wrap="nowrap" spacing={2}>
+    <Grid item>
+      <Avatar alt="Remy Sharp"/> 
+    </Grid>
+    <Grid justifyContent="left" item xs zeroMinWidth>
+      <div>
+      <h4 style={{ margin: 0, textAlign: "left" }}>
+      Name: {review.userName} </h4>
+      <Rating name="read-only" value={review.stars} readOnly />
+      </div>
+      <p style={{ textAlign: "left" }}>
+        {review.body}
+        <br />
+      </p>
+      <p style={{ textAlign: "left", color: "gray" }}>
+        Created at: {review.createdAt}
+      </p>
+    </Grid>
+    </Grid>
+    <Divider variant="fullWidth" style={{ margin: "30px 0" }} />
+    </Box>
+  }
   const isAuthenticatedPage = () => {
     if(!isAuthenticated)
     {return (
@@ -332,10 +450,45 @@ export default function BlogPage() {
           <List style={{maxHeight: 500, overflow:'auto'}}>
             {friendList !== undefined && friendList.map((friend, index) => (
               <ListItem key={friend.friendID} disablePadding>
-                <ListItemButton>
+                <ListItemButton onClick={()=>handleClickOpen(friend.friendID, friend.userName)}>
                   <Avatar src={`/assets/images/avatars/avatar_${friend.avatarNum}.jpg`} alt="photoURL" />
                   <ListItemText primary={friend.userName} sx={{ marginLeft: '10px' }}/>
                 </ListItemButton>
+                <Dialog
+                  open={openDialogue}
+                  onClose={handleClose}
+                  aria-labelledby="alert-dialog-title"
+                  aria-describedby="alert-dialog-description"
+                >
+                  <DialogTitle id="alert-dialog-title">
+                    {`Do you want to send ${tempNotif} a meal request?`}
+                  </DialogTitle>
+                  <DialogContent>
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <Stack spacing={3}>
+                  <TimePicker
+                    label="Time"
+                    value={value}
+                    onChange={handleChange}
+                    renderInput={(params) => <TextField {...params} />}
+                  />
+                  <DesktopDatePicker
+                    label="Date desktop"
+                    inputFormat="MM/DD/YYYY"
+                    value={value}
+                    onChange={handleChange}
+                    renderInput={(params) => <TextField {...params} />}
+                  />
+                  </Stack>
+                  </LocalizationProvider>
+                  </DialogContent>
+                  <DialogActions>
+                    <Button onClick = {handleCancel}>Ignore</Button>
+                    <Button onClick = {handleSendMealRequest} autoFocus>
+                      Confirm
+                    </Button>
+                  </DialogActions>
+                </Dialog>
               </ListItem>
             ))}
           </List>
@@ -397,6 +550,35 @@ export default function BlogPage() {
     </Box>
     {restaurantImageList()}
     {isAuthenticatedPage()}
+    
+    
+    <Box style={{width: '100%'}}>
+    <h1 style={{marginLeft: 50}}>
+      Write a Review:
+    </h1>
+    <p style={{marginLeft: 50}}>
+      Your name will be shown.
+    </p>
+    <Box style = {{width: "80%", marginLeft: 'auto', marginRight: 'auto'}}>
+    <Rating name="simple-controlled" value={starCount} onChange={(event, newValue)=> {setStarCount(newValue)}} />
+    <TextField
+          fullWidth
+          id="standard-multiline-flexible"
+          label="Submit a Review"
+          multiline
+          maxRows={10}
+          value={reviewInput}
+          onChange={handleChangeReview}
+          variant="standard"
+        />
+      <br />
+      <Button onClick={submitReview}>
+      Submit
+    </Button>
+    </Box>
+    </Box>
+    
+    
     <Box
       sx={{
         display: 'flex',
@@ -418,61 +600,19 @@ export default function BlogPage() {
       }}
     >
       <Paper style={{ width: "80%", padding: "40px 20px" }}>
-        <Grid container wrap="nowrap" spacing={2}>
-          <Grid item>
-            <Avatar alt="Remy Sharp"/> 
-          </Grid>
-          <Grid justifyContent="left" item xs zeroMinWidth>
-            <div>
-            <h4 style={{ margin: 0, textAlign: "left" }}>@jessicaromero</h4>
-            <Rating name="read-only" value={3} readOnly />
-            </div>
-            <p style={{ textAlign: "left" }}>
-              my name is jessica{" "}
-            </p>
-            <p style={{ textAlign: "left", color: "gray" }}>
-              posted 1 minute ago
-            </p>
-          </Grid>
-        </Grid>
-        <Divider variant="fullWidth" style={{ margin: "30px 0" }} />
-        <Grid container wrap="nowrap" spacing={2}>
-          <Grid item>
-            <Avatar alt="Remy Sharp" />
-          </Grid>
-          <Grid justifyContent="left" item xs zeroMinWidth>
-            <div>
-            <h4 style={{ margin: 0, textAlign: "left" }}>@williamjung</h4>
-            <Rating name="read-only" value={3} readOnly />
-            </div>
-            <p style={{ textAlign: "left" }}>
-              my name is william{" "}
-            </p>
-            <p style={{ textAlign: "left", color: "gray" }}>
-              posted 1 minute ago
-            </p>
-          </Grid>
-        </Grid>
-        <Divider variant="fullWidth" style={{ margin: "30px 0" }} />
-        <Grid container wrap="nowrap" spacing={2}>
-          <Grid item>
-            <Avatar alt="Remy Sharp" />
-          </Grid>
-          <Grid justifyContent="left" item xs zeroMinWidth>
-            <div>
-            <h4 style={{ margin: 0, textAlign: "left" }}>@christianchoi</h4>
-            <Rating name="read-only" value={3} readOnly />
-            </div>
-            <p style={{ textAlign: "left" }}>
-              my name is christian{" "}
-            </p>
-            <p style={{ textAlign: "left", color: "gray" }}>
-              posted 1 minute ago
-            </p>
-          </Grid>
-        </Grid>
+        {reviews.map(makeReviews)}
       </Paper>
+      
+    </Box>
+    <Box style={{display: 'flex',
+        justifyContent: 'center',}}>
+    <Typography style={{marginLeft:'auto'}}>Page: {page} of {Math.ceil(reviewsLength / 5)} </Typography>
+      <Pagination style={{justifyContent:'center', marginLeft:'auto', marginRight: 'auto'}} count={Math.ceil(reviewsLength / 5)} page={page} onChange={handleChangePage} />
+      </Box>
+    <Box> 
+      <br />
     </Box>
     </>
+
   );
 }
