@@ -18,7 +18,7 @@ export default function NavSection({ data = [], ...other }) {
         {data.map((item) => (
           <NavItem key={item.title} item={item} />
         ))}
-      </List>
+    </List>
     </Box>
   );
 }

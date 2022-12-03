@@ -90,19 +90,23 @@ export default function UserPage() {
   const [friendID, setFriendID] = useState([]);
   
   useEffect(() => {
+    console.log(page + 1);
     const params = {
       page: page + 1,
       length: rowsPerPage,
     };
+
     if(filterName.length >= 3) {
       params.user_name = filterName;
     }
-    axios.get(`${APIHOST}/api/user/list`, {
-      params
-    }).then((response) => {
-      setFetchedUserList(response.data.user.list);
-      setUserListTotal(response.data.user.totalLength);
-    }).catch((err) => alert(err));
+
+    callWithToken('get', `${APIHOST}/api/user/list`, params).then((response) =>{
+        console.log(response);
+        console.log("CHRIST");
+        setFetchedUserList(response.data.user.list);
+        setUserListTotal(response.data.user.totalLength);
+      })
+      .catch((err) => alert(err));
   }, [filterName, page, rowsPerPage]);
 
   const handleOpenMenu = (event, id) => {
@@ -130,14 +134,12 @@ export default function UserPage() {
   }
 
   const addUser = (event, friendid) => {
-    callWithToken('post', `${APIHOST}/api/friend/add`, 
+    callWithToken('post', `${APIHOST}/api/friend/send-request`, 
     {
       friend_id: friendid
     })
     .then((response) =>{alert(response.data.msg);})
     .catch((err) => alert(err));
-    
-  
   }
 
   const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - userListTotal) : 0;
@@ -151,7 +153,6 @@ export default function UserPage() {
       const id = row.userID;
       const name = row.userName;
       const role = row.userID;
-      const status = "asdf";
       const company = row.email;
       const avatarUrl = `/assets/images/avatars/avatar_${row.avatarNum}.jpg`;
       const isVerified = row.reviewCount;
@@ -203,7 +204,6 @@ export default function UserPage() {
             New User
           </Button>
         </Stack>
-
         <Card>
           <UserListToolbar numSelected={selected.length} filterName={filterName} onFilterName={handleFilterByName} />
 

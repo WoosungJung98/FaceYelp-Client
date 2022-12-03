@@ -27,6 +27,8 @@ export default function LoginForm() {
       alert("Password is invalid.");
       return;
     }
+    console.log(inputEmail.current);
+    console.log(inputPassword.current);
     axios.post(`${APIHOST}/api/user/login`, {
       email: inputEmail.current,
       password: inputPassword.current
@@ -35,6 +37,7 @@ export default function LoginForm() {
       setCookie("refreshToken", response.data.refreshToken);
       navigate('/', { replace: true });
     }).catch((err) => {
+      console.log(err)
       if(err.response.status === 401) alert(err.response.data.msg);
       else alert(err);
     });

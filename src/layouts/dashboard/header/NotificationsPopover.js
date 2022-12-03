@@ -1,7 +1,6 @@
 import PropTypes from 'prop-types';
 import { set, sub } from 'date-fns';
 import { noCase } from 'change-case';
-import { faker } from '@faker-js/faker';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 // @mui
@@ -42,28 +41,66 @@ const [tempNotif, setTempNotif] = useState(null);
 const [rerender, setRerender] = useState(false);
 const [open, setOpen] = useState(null);
 const [notifications, setNotifications] = useState([]);
+const [mealNotifications, setMealNotifications] = useState([]);
 const [openDialogue, setOpenDialogue] = useState(false);
+const [openDialogueMeal, setOpenDialogueMeal] = useState(false);
 const [tempFriendRequestID, setTempFriendRequestID] = useState(null);
 
+function secondsToDhms(minutes) {
+  minutes = Number(minutes);
+  const d = Math.floor(minutes / (60*24));
+  const h = Math.floor(minutes % (60*24) / 3600);
+  const m = Math.floor(minutes % 60 / 60);
+
+  const dDisplay = d > 0 ? d + (d === 1 ? " day, " : " days, ") : "";
+  const hDisplay = h > 0 ? h + (h === 1 ? " hour, " : " hours, ") : "";
+  const mDisplay = m > 0 ? m + (m === 1 ? " minute, " : " minutes, ") : "";
+  return dDisplay + hDisplay + mDisplay;
+  }
+
 useInterval(async () => {
-
   callWithToken('get', `${APIHOST}/api/friend/requests`, {}).then((response) => {
-
     setNotifications(response.data.friendRequestList.map(makeNotifs));
     function makeNotifs(obj) {
     return {
     id: obj.friendRequestID,
     title: `${obj.userName} added you as a Friend!`,
-    description: `${obj.timeDiff} minutes ago`,
-    avatar: null,
+    description: `${secondsToDhms(obj.timeDiff)} ago`,
+    avatar: obj.avatar,
     type: null,
     createdAt: null,
     isUnRead: true,
-    name: obj.userName
+    name: obj.userName,
   }
 }
   }).catch((err) => alert(err));
 }, 3000)
+
+useInterval(async () => {
+  callWithToken('get', `${APIHOST}/api/meal/requests`, {}).then((response) => {
+    console.log("this is alert");
+    console.log(response);
+    setMealNotifications(response.data.mealRequestList.map(makeNotifs));
+    console.log(mealNotifications);
+    function makeNotifs(obj) {
+    return {
+    id: obj.mealRequestID,
+    title: `${obj.userName} wants to grab a meal with you!`,
+    description: `${secondsToDhms(obj.timeDiff)} ago`,
+    avatar: null,
+    type: null,
+    createdAt: null,
+    isUnRead: true,
+    name: obj.userName,
+    mealAt: obj.mealAt,
+    restaurantName: obj.restaurantName,
+    restaurantAddress: "THIS IS MY ADDRESS"
+  }
+}
+  }).catch((err) => alert(err));
+}, 3000)
+
+
 
   const navigate = useNavigate();
   const handleClickOpen = (notification) => {
@@ -71,23 +108,50 @@ useInterval(async () => {
     setTempFriendRequestID(notification.id);
     setOpenDialogue(true);
   };
+  const handleClickOpenMeal = (notification) => {
+    setTempNotif(notification.name);
+    setTempFriendRequestID(notification.id);
+    setOpenDialogueMeal(true);
+  };
+  const handleCloseMeal = (notification) => {
+    setTempNotif(notification.name);
+    setTempFriendRequestID(notification.id);
+    setOpenDialogueMeal(false);
+  };
   const handleConfirm = () =>{
     callWithToken('post', `${APIHOST}/api/friend/accept-request`, {friend_request_id: tempFriendRequestID}).then((response) => {
     alert("Succesfully accepted friend request")
     handleClose()
     navigate('/', { replace: true});
     }).catch((err) => {alert(err); handleClose()})
-
   }
+
   const handleIgnore = () =>{
     callWithToken('post', `${APIHOST}/api/friend/ignore-request`, {friend_request_id: tempFriendRequestID}).then((response) => {
-      alert("Succesfully accepted friend request")
+      alert("Succesfully ignored friend request")
       handleClose()
       navigate('/', { replace: true});
       }).catch((err) => {alert(err); handleClose()})
-    
-    //  axios call to the api with tempFriendRequestID
   }
+
+
+  const handleConfirmMeal = () =>{
+    callWithToken('post', `${APIHOST}/api/meal/accept-request`, {meal_request_id: tempFriendRequestID}).then((response) => {
+    alert("Succesfully accepted meal request")
+    handleClose()
+    navigate('/', { replace: true});
+    }).catch((err) => {alert(err); handleClose()})
+  }
+
+  const handleIgnoreMeal = () =>{
+    callWithToken('post', `${APIHOST}/api/meal/ignore-request`, {meal_request_id: tempFriendRequestID}).then((response) => {
+      alert("Succesfully ignored meal request")
+      handleClose()
+      navigate('/', { replace: true});
+      }).catch((err) => {alert(err); handleClose()})
+  }
+  
+
   const handleClose = () => {
     setOpenDialogue(false);
   };
@@ -160,15 +224,51 @@ useInterval(async () => {
             disablePadding
             subheader={
               <ListSubheader disableSticky sx={{ py: 1, px: 2.5, typography: 'overline' }}>
-                New
+                New Meal Requests
               </ListSubheader>}
             
           >
+            {mealNotifications.map((notification) => (
+            <Box>
+              <ListItemButton onClick={()=>handleClickOpenMeal(notification)}>
+              <NotificationItem key={notification.id} notification={notification} />
+              </ListItemButton>
+              <Dialog
+                open={openDialogueMeal}
+                onClose={handleCloseMeal}
+                aria-labelledby="alert-dialog-title"
+                aria-describedby="alert-dialog-description"
+              >
+                <DialogTitle id="alert-dialog-title">
+                  {`Do you want to grab a meal with ${tempNotif}?`}
+                </DialogTitle>
+                <DialogContent>
+                  <DialogContentText id="alert-dialog-description">
+                    {tempNotif} wants to grab a meal with you at {notification.restaurantName}: <br />
+                    Location: {notification.restaurantAddress} <br />
+                    Time: {notification.mealAt} 
+                  </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={handleIgnoreMeal}>Ignore</Button>
+                  <Button onClick={handleConfirmMeal} autoFocus>
+                    Confirm
+                  </Button>
+                </DialogActions>
+            </Dialog>
+              </Box>))}
+              <Divider sx={{ borderStyle: 'dashed' }} />
+              <ListSubheader disableSticky sx={{ py: 1, px: 2.5, typography: 'overline' }}>
+                New Friend Requests
+              </ListSubheader>
+            
+            
             {notifications.map((notification) => (
             <Box>
               <ListItemButton onClick={()=>handleClickOpen(notification)}>
-              <NotificationItem key={notification.id} notification={notification} />
+              <NotificationItem key={notification.id} notification={notification}/>
               </ListItemButton>
+            
       <Dialog
         open={openDialogue}
         onClose={handleClose}
@@ -195,21 +295,7 @@ useInterval(async () => {
             ))}
           </List>
 
-          <List
-            disablePadding
-            subheader={
-              <ListSubheader disableSticky sx={{ py: 1, px: 2.5, typography: 'overline' }}>
-                Before that
-              </ListSubheader>
-            }
-          >
-            {notifications.slice(2, 5).map((notification) => (
-              <ListItemButton >
-              <NotificationItem key={notification.id} notification={notification} />
-              
-              </ListItemButton>
-            ))}
-          </List>
+          
         </Scrollbar>
 
         <Divider sx={{ borderStyle: 'dashed' }} />

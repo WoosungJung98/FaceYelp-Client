@@ -10,6 +10,7 @@ import CreateAccountPage from './pages/CreateAccountPage';
 import Page404 from './pages/Page404';
 import ProductsPage from './pages/ProductsPage';
 import DashboardAppPage from './pages/DashboardAppPage';
+import UpcomingMealsPage from './pages/UpcomingMealsPage';
 
 // ----------------------------------------------------------------------
 
@@ -23,6 +24,7 @@ export default function Router() {
         { path: 'app', element: <DashboardAppPage /> },
         { path: 'user', element: <UserPage /> },
         { path: 'products', element: <ProductsPage /> },
+        { path: 'upcoming-meals', element: <UpcomingMealsPage />},
       ],
     },
     { path: 'restaurant/:businessID', element: <BlogPage /> },
