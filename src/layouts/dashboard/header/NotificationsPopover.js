@@ -81,7 +81,7 @@ export default function NotificationsPopover() {
           createdAt: dayjs(`${obj.createdAt}Z`).fromNow(),
           isUnRead: true,
           name: obj.userName,
-          mealAt: obj.mealAt,
+          mealAt: dayjs(`${obj.mealAt}Z`).format('MMM D, YYYY h:mm A'),
           restaurantName: obj.restaurantName,
           restaurantAddress: obj.restaurantAddress
         };
@@ -112,7 +112,7 @@ export default function NotificationsPopover() {
     callWithToken('post', `${APIHOST}/api/friend/accept-request`, {friend_request_id: tempFriendRequestID}).then((response) => {
     alert("Succesfully accepted friend request")
     handleClose()
-    navigate('/', { replace: true});
+    navigate(0);
     }).catch((err) => {alert(err); handleClose()})
   }
 
@@ -120,7 +120,7 @@ export default function NotificationsPopover() {
     callWithToken('post', `${APIHOST}/api/friend/ignore-request`, {friend_request_id: tempFriendRequestID}).then((response) => {
       alert("Succesfully ignored friend request")
       handleClose()
-      navigate('/', { replace: true});
+      navigate(0);
       }).catch((err) => {alert(err); handleClose()})
   }
 
@@ -128,7 +128,7 @@ export default function NotificationsPopover() {
     callWithToken('post', `${APIHOST}/api/meal/accept-request`, {meal_request_id: tempFriendRequestID}).then((response) => {
     alert("Succesfully accepted meal request")
     handleClose()
-    navigate('/', { replace: true});
+    navigate(0);
     }).catch((err) => {alert(err); handleClose()})
   }
 
@@ -136,7 +136,7 @@ export default function NotificationsPopover() {
     callWithToken('post', `${APIHOST}/api/meal/ignore-request`, {meal_request_id: tempFriendRequestID}).then((response) => {
       alert("Succesfully ignored meal request")
       handleClose()
-      navigate('/', { replace: true});
+      navigate(0);
       }).catch((err) => {alert(err); handleClose()})
   }
 
