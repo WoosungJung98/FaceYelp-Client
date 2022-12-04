@@ -1,5 +1,4 @@
 import PropTypes from 'prop-types';
-import { set, sub } from 'date-fns';
 import { noCase } from 'change-case';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -28,8 +27,6 @@ import {
 import * as dayjs from 'dayjs';
 import * as relativeTime from 'dayjs/plugin/relativeTime'; // import plugin
 import { callWithToken } from '../../../common/helpers/utils/common';
-// utils
-import { fToNow } from '../../../utils/formatTime';
 // components
 import Iconify from '../../../components/iconify';
 import Scrollbar from '../../../components/scrollbar';
@@ -90,11 +87,13 @@ export default function NotificationsPopover() {
   }, 3000);
 
   const navigate = useNavigate();
+  
   const handleClickOpen = (notification) => {
     setTempNotif(notification.name);
     setTempFriendRequestID(notification.id);
     setOpenDialogue(true);
   };
+
   const handleClickOpenMeal = (notification) => {
     setTempRestaurantName(notification.restaurantName);
     setTempTime(notification.mealAt);
@@ -103,42 +102,56 @@ export default function NotificationsPopover() {
     setTempFriendRequestID(notification.id);
     setOpenDialogueMeal(true);
   };
+  
   const handleCloseMeal = (notification) => {
     setTempNotif(notification.name);
     setTempFriendRequestID(notification.id);
     setOpenDialogueMeal(false);
   };
-  const handleConfirm = () =>{
+
+  const handleConfirm = () => {
     callWithToken('post', `${APIHOST}/api/friend/accept-request`, {friend_request_id: tempFriendRequestID}).then((response) => {
-    alert("Succesfully accepted friend request")
-    handleClose()
-    navigate(0);
-    }).catch((err) => {alert(err); handleClose()})
-  }
+      if(response.status !== 200) alert(response.data.msg);
+      else {
+        alert("Succesfully accepted friend request");
+        handleClose();
+        navigate(0);
+      }
+    }).catch((err) => {alert(err); handleClose();})
+  };
 
-  const handleIgnore = () =>{
+  const handleIgnore = () => {
     callWithToken('post', `${APIHOST}/api/friend/ignore-request`, {friend_request_id: tempFriendRequestID}).then((response) => {
-      alert("Succesfully ignored friend request")
-      handleClose()
-      navigate(0);
-      }).catch((err) => {alert(err); handleClose()})
-  }
+      if(response.status !== 200) alert(response.data.msg);
+      else {
+        alert("Succesfully ignored friend request");
+        handleClose();
+        navigate(0);
+      }
+    }).catch((err) => {alert(err); handleClose();})
+  };
 
-  const handleConfirmMeal = () =>{
+  const handleConfirmMeal = () => {
     callWithToken('post', `${APIHOST}/api/meal/accept-request`, {meal_request_id: tempFriendRequestID}).then((response) => {
-    alert("Succesfully accepted meal request")
-    handleClose()
-    navigate(0);
-    }).catch((err) => {alert(err); handleClose()})
-  }
+      if(response.status !== 200) alert(response.data.msg);
+      else {
+        alert("Succesfully accepted meal request")
+        handleClose()
+        navigate(0);
+      }
+    }).catch((err) => {alert(err); handleClose();})
+  };
 
-  const handleIgnoreMeal = () =>{
+  const handleIgnoreMeal = () => {
     callWithToken('post', `${APIHOST}/api/meal/ignore-request`, {meal_request_id: tempFriendRequestID}).then((response) => {
-      alert("Succesfully ignored meal request")
-      handleClose()
-      navigate(0);
-      }).catch((err) => {alert(err); handleClose()})
-  }
+      if(response.status !== 200) alert(response.data.msg);
+      else {
+        alert("Succesfully ignored meal request");
+        handleClose();
+        navigate(0);
+      }
+    }).catch((err) => {alert(err); handleClose();})
+  };
 
   const handleClose = () => {
     setOpenDialogue(false);
@@ -221,7 +234,7 @@ export default function NotificationsPopover() {
             
           >
             {mealNotifications.map((notification) => (
-            <Box>
+            <Box key={notification.id}>
               <ListItemButton onClick={()=>handleClickOpenMeal(notification)}>
               <NotificationItem key={notification.id} notification={notification} />
               </ListItemButton>
@@ -256,7 +269,7 @@ export default function NotificationsPopover() {
             
             
             {friendNotifications.map((notification) => (
-            <Box>
+            <Box key={notification.id}>
               <ListItemButton onClick={()=>handleClickOpen(notification)}>
               <NotificationItem key={notification.id} notification={notification}/>
               </ListItemButton>
@@ -306,7 +319,7 @@ export default function NotificationsPopover() {
 
 NotificationItem.propTypes = {
   notification: PropTypes.shape({
-    createdAt: PropTypes.instanceOf(Date),
+    createdAt: PropTypes.string,
     id: PropTypes.string,
     isUnRead: PropTypes.bool,
     title: PropTypes.string,
