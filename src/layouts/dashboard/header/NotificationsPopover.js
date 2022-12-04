@@ -112,7 +112,7 @@ export default function NotificationsPopover() {
     callWithToken('post', `${APIHOST}/api/friend/accept-request`, {friend_request_id: tempFriendRequestID}).then((response) => {
     alert("Succesfully accepted friend request")
     handleClose()
-    navigate('/', { replace: true});
+    navigate(0);
     }).catch((err) => {alert(err); handleClose()})
   }
 
@@ -120,7 +120,7 @@ export default function NotificationsPopover() {
     callWithToken('post', `${APIHOST}/api/friend/ignore-request`, {friend_request_id: tempFriendRequestID}).then((response) => {
       alert("Succesfully ignored friend request")
       handleClose()
-      navigate('/', { replace: true});
+      navigate(0);
       }).catch((err) => {alert(err); handleClose()})
   }
 
@@ -128,7 +128,7 @@ export default function NotificationsPopover() {
     callWithToken('post', `${APIHOST}/api/meal/accept-request`, {meal_request_id: tempFriendRequestID}).then((response) => {
     alert("Succesfully accepted meal request")
     handleClose()
-    navigate('/', { replace: true});
+    navigate(0);
     }).catch((err) => {alert(err); handleClose()})
   }
 
@@ -136,7 +136,7 @@ export default function NotificationsPopover() {
     callWithToken('post', `${APIHOST}/api/meal/ignore-request`, {meal_request_id: tempFriendRequestID}).then((response) => {
       alert("Succesfully ignored meal request")
       handleClose()
-      navigate('/', { replace: true});
+      navigate(0);
       }).catch((err) => {alert(err); handleClose()})
   }
 
