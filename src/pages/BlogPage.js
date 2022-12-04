@@ -339,6 +339,39 @@ export default function BlogPage() {
     <Divider variant="fullWidth" style={{ margin: "30px 0" }} />
     </Box>
   }
+  const isAuthenticatedReviews = () => {
+    if (isAuthenticated)
+    {
+      return (<Box style={{width: '100%'}}>
+      <h1 style={{marginLeft: 50}}>
+        Write a Review:
+      </h1>
+      <p style={{marginLeft: 50}}>
+        Your name will be shown.
+      </p>
+      <Box style = {{width: "80%", marginLeft: 'auto', marginRight: 'auto'}}>
+      <Rating name="simple-controlled" value={starCount} onChange={(event, newValue)=> {setStarCount(newValue)}} />
+      <TextField
+            fullWidth
+            id="standard-multiline-flexible"
+            label="Submit a Review"
+            multiline
+            maxRows={10}
+            value={reviewInput}
+            onChange={handleChangeReview}
+            variant="standard"
+          />
+        <br />
+        <Button onClick={submitReview}>
+        Submit
+      </Button>
+      </Box>
+      </Box>
+      );
+    
+    }
+    return (<br />)
+  }
   const isAuthenticatedPage = () => {
     if(!isAuthenticated)
     {return (
@@ -540,34 +573,7 @@ export default function BlogPage() {
     </Box>
     {restaurantImageList()}
     {isAuthenticatedPage()}
-    
-    
-    <Box style={{width: '100%'}}>
-    <h1 style={{marginLeft: 50}}>
-      Write a Review:
-    </h1>
-    <p style={{marginLeft: 50}}>
-      Your name will be shown.
-    </p>
-    <Box style = {{width: "80%", marginLeft: 'auto', marginRight: 'auto'}}>
-    <Rating name="simple-controlled" value={starCount} onChange={(event, newValue)=> {setStarCount(newValue)}} />
-    <TextField
-          fullWidth
-          id="standard-multiline-flexible"
-          label="Submit a Review"
-          multiline
-          maxRows={10}
-          value={reviewInput}
-          onChange={handleChangeReview}
-          variant="standard"
-        />
-      <br />
-      <Button onClick={submitReview}>
-      Submit
-    </Button>
-    </Box>
-    </Box>
-    
+    {isAuthenticatedReviews()}
     
     <Box
       sx={{
