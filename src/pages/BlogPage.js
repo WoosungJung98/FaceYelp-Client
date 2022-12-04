@@ -339,79 +339,112 @@ export default function BlogPage() {
     <Divider variant="fullWidth" style={{ margin: "30px 0" }} />
     </Box>
   }
-  const isAuthenticatedPage = () => {
-    if(!isAuthenticated)
-    {return (
-      <Box
-      sx={{
-        display: 'flex',
-        justifyContent: 'center',
-        p: 2,
-        m: 1,
-        bgcolor: '#F9FAFB',
-      }}
-    >
-      <div style={{ height: '42vh', width: '50%', paddingRight:"30px" }} >
-        {getGoogleMapLoc()}
-      </div>
-      <div style={{ height: '38vh', width: '30%', paddingLeft: "30px" }}>
-        <TableContainer component={Paper}>
-          <Table sx={{ minWidth: 10 }} style={{alignSelf:"flex-end"}} aria-label="customized table" size="small">
-            <TableHead>
-              <TableRow>
-                <StyledTableCell> Days</StyledTableCell>
-                <StyledTableCell align="left">Hours</StyledTableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {restaurantHoursTableItems}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </div>
-    </Box>
-      );}
-    return(
-    <Box
-      sx={{
-        display: 'flex',
-        p: 3,
-        m: 1,
-        bgcolor: '#F9FAFB',
-        flexDirection:'column',
-        flexWrap: 'wrap',
-        justifyContent: 'space-around',
-        height: 550
-      }}
-    >
-      <Box style={{order: 1, height: '40vh', width: '60%', p: 1, m:1 }} >
-        {getGoogleMapLoc()}
-      </Box>
-      <Box style={{ order: 2, height: '30vh', width: '60%', p:1, m:1 }}>
-        <TableContainer component={Paper}>
-          <Table sx={{ minWidth: 10 }} style={{alignSelf:"flex-end"}} aria-label="customized table" size="small">
-            <TableHead>
-              <TableRow>
-                <StyledTableCell> Days</StyledTableCell>
-                <StyledTableCell align="left">Hours</StyledTableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {restaurantHoursTableItems}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Box>
-      {getFriendListSidebar()}
-    </Box>
-    
 
-  )}
+  const isAuthenticatedReviews = () => {
+    if (isAuthenticated)
+    {
+      return (<Box style={{width: '100%'}}>
+      <h1 style={{marginLeft: 50}}>
+        Write a Review:
+      </h1>
+      <p style={{marginLeft: 50}}>
+        Your name will be shown.
+      </p>
+      <Box style = {{width: "80%", marginLeft: 'auto', marginRight: 'auto'}}>
+      <Rating name="simple-controlled" value={starCount} onChange={(event, newValue)=> {setStarCount(newValue)}} />
+      <TextField
+            fullWidth
+            id="standard-multiline-flexible"
+            label="Submit a Review"
+            multiline
+            maxRows={10}
+            value={reviewInput}
+            onChange={handleChangeReview}
+            variant="standard"
+          />
+        <br />
+        <Button onClick={submitReview}>
+        Submit
+      </Button>
+      </Box>
+      </Box>
+      );
+    
+    }
+    return (<br />)
+  };
+
+  const isAuthenticatedPage = () => {
+    if(!isAuthenticated) {
+      return (
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            p: 2,
+            m: 1,
+            bgcolor: '#F9FAFB',
+          }}
+        >
+          <div style={{ height: '42vh', width: '50%', paddingRight:"30px" }} >
+            {getGoogleMapLoc()}
+          </div>
+          <div style={{ height: '38vh', width: '30%', paddingLeft: "30px" }}>
+            <TableContainer component={Paper}>
+              <Table sx={{ minWidth: 10 }} style={{alignSelf:"flex-end"}} aria-label="customized table" size="small">
+                <TableHead>
+                  <TableRow>
+                    <StyledTableCell> Days</StyledTableCell>
+                    <StyledTableCell align="left">Hours</StyledTableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {restaurantHoursTableItems}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </div>
+        </Box>
+      );
+    }
+
+    return (
+      <>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          p: 2,
+          m: 1,
+          bgcolor: '#F9FAFB',
+        }}
+      >
+        <Box style={{height: '40vh', width: '50%', p: 1, m:1 }} >
+          {getGoogleMapLoc()}
+          <TableContainer component={Paper}>
+            <Table sx={{ minWidth: 10 }} style={{alignSelf:"flex-end"}} aria-label="customized table" size="small">
+              <TableHead>
+                <TableRow>
+                  <StyledTableCell> Days</StyledTableCell>
+                  <StyledTableCell align="left">Hours</StyledTableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {restaurantHoursTableItems}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Box>
+        {getFriendListSidebar()}
+      </Box>
+      </>
+    );
+  };
   
   const getFriendListSidebar = () => {
     return (
       <>
-      <Box sx={{ p: 1, width:"25%", order: 3}}>
+      <Box sx={{ p: 1, width: '30%' }}>
         <Box sx={{ overflow: 'auto' }}>
           <ClickAwayListener onClickAway={handleClose}>
             <Box>
@@ -540,34 +573,7 @@ export default function BlogPage() {
     </Box>
     {restaurantImageList()}
     {isAuthenticatedPage()}
-    
-    
-    <Box style={{width: '100%'}}>
-    <h1 style={{marginLeft: 50}}>
-      Write a Review:
-    </h1>
-    <p style={{marginLeft: 50}}>
-      Your name will be shown.
-    </p>
-    <Box style = {{width: "80%", marginLeft: 'auto', marginRight: 'auto'}}>
-    <Rating name="simple-controlled" value={starCount} onChange={(event, newValue)=> {setStarCount(newValue)}} />
-    <TextField
-          fullWidth
-          id="standard-multiline-flexible"
-          label="Submit a Review"
-          multiline
-          maxRows={10}
-          value={reviewInput}
-          onChange={handleChangeReview}
-          variant="standard"
-        />
-      <br />
-      <Button onClick={submitReview}>
-      Submit
-    </Button>
-    </Box>
-    </Box>
-    
+    {isAuthenticatedReviews()}
     
     <Box
       sx={{
