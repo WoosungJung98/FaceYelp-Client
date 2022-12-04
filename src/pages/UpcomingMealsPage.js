@@ -36,7 +36,7 @@ const columns = [
     editable: false,
   },
   {
-    field:'address',
+    field:'restaurantAddress',
     headerName: 'Restaurant Address',
     width: 250,
     editable: false

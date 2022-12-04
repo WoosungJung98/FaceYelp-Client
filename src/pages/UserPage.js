@@ -90,7 +90,6 @@ export default function UserPage() {
   const [friendID, setFriendID] = useState([]);
   
   useEffect(() => {
-    console.log(page + 1);
     const params = {
       page: page + 1,
       length: rowsPerPage,
@@ -101,8 +100,6 @@ export default function UserPage() {
     }
 
     callWithToken('get', `${APIHOST}/api/user/list`, params).then((response) =>{
-        console.log(response);
-        console.log("CHRIST");
         setFetchedUserList(response.data.user.list);
         setUserListTotal(response.data.user.totalLength);
       })
@@ -148,6 +145,16 @@ export default function UserPage() {
 
   const isNotFound = !userListTotal && !!filterName;
 
+  const getAddFriendButton = (userID, friendID, isFriend, hasSentRequest) => {
+    if(isFriend) {
+      return (<Button variant="contained" disableFocusRipple disableRipple color="success" startIcon={<Iconify icon="material-symbols:check" />}>Friends</Button>);
+    }
+    if(hasSentRequest) {
+      return (<Button variant="contained" disabled startIcon={<Iconify icon="material-symbols:arrow-forward-rounded" />}>Request Sent</Button>);
+    }
+    return (<Button variant="contained" onClick = {(event)=> addUser(event, userID)} onChange={(event) => addUser(event, friendID)} startIcon={<Iconify icon="eva:plus-fill" />}>Add Friend</Button>);
+  }
+
   const userListTableRows = useMemo(() =>
     fetchedUserList.map((row) => {
       const id = row.userID;
@@ -176,7 +183,7 @@ export default function UserPage() {
           <TableCell align="left">{isVerified}</TableCell>
 
           <TableCell component="th" scope="row" padding="none">
-          <Button variant="contained" onClick = {(event)=>  addUser(event, row.userID)} onChange={(event) => addUser(event, row.friendID)} startIcon={<Iconify icon="eva:plus-fill" />}>Add User</Button>
+          {getAddFriendButton(row.userID, row.friendID, row.isFriend, row.hasSentRequest)}
           </TableCell>
           
           <TableCell align="right">
@@ -200,9 +207,6 @@ export default function UserPage() {
           <Typography variant="h4" gutterBottom>
             Find Friends
           </Typography>
-          <Button variant="contained" startIcon={<Iconify icon="eva:plus-fill" />}>
-            New User
-          </Button>
         </Stack>
         <Card>
           <UserListToolbar numSelected={selected.length} filterName={filterName} onFilterName={handleFilterByName} />
@@ -288,9 +292,6 @@ export default function UserPage() {
         <MenuItem>
           <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
           Edit
-        </MenuItem>
-        <MenuItem onClick={(event)=>{addFriend(event)}}>
-        Add Friend
         </MenuItem>
         <MenuItem sx={{ color: 'error.main' }}>
           <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />

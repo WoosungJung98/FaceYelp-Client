@@ -25,7 +25,9 @@ import {
   ListItemAvatar,
   ListItemButton,
 } from '@mui/material';
-import { callWithToken } from '../../../common/helpers/utils/common'
+import * as dayjs from 'dayjs';
+import * as relativeTime from 'dayjs/plugin/relativeTime'; // import plugin
+import { callWithToken } from '../../../common/helpers/utils/common';
 // utils
 import { fToNow } from '../../../utils/formatTime';
 // components
@@ -36,71 +38,53 @@ import { APIHOST } from '../../../config';
 
 // ----------------------------------------------------------------------
 export default function NotificationsPopover() {
+  const [tempNotif, setTempNotif] = useState(null);
+  const [open, setOpen] = useState(null);
+  const [friendNotifications, setFriendNotifications] = useState([]);
+  const [mealNotifications, setMealNotifications] = useState([]);
+  const [openDialogue, setOpenDialogue] = useState(false);
+  const [openDialogueMeal, setOpenDialogueMeal] = useState(false);
+  const [tempFriendRequestID, setTempFriendRequestID] = useState(null);
+  dayjs.extend(relativeTime);
 
-const [tempNotif, setTempNotif] = useState(null);
-const [rerender, setRerender] = useState(false);
-const [open, setOpen] = useState(null);
-const [notifications, setNotifications] = useState([]);
-const [mealNotifications, setMealNotifications] = useState([]);
-const [openDialogue, setOpenDialogue] = useState(false);
-const [openDialogueMeal, setOpenDialogueMeal] = useState(false);
-const [tempFriendRequestID, setTempFriendRequestID] = useState(null);
+  useInterval(async () => {
+    callWithToken('get', `${APIHOST}/api/friend/requests`, {}).then((response) => {
+      setFriendNotifications(response.data.friendRequestList.map(makeNotifs));
+      function makeNotifs(obj) {
+        return {
+          id: obj.friendRequestID,
+          title: obj.userName,
+          description: "added you as a Friend!",
+          avatar: `/assets/images/avatars/avatar_${obj.avatarNum}.jpg`,
+          type: null,
+          createdAt: dayjs(`${obj.createdAt}Z`).fromNow(),
+          isUnRead: true,
+          name: obj.userName,
+        };
+      }
+    }).catch((err) => alert(err));
+  }, 3000);
 
-function secondsToDhms(minutes) {
-  minutes = Number(minutes);
-  const d = Math.floor(minutes / (60*24));
-  const h = Math.floor(minutes % (60*24) / 3600);
-  const m = Math.floor(minutes % 60 / 60);
-
-  const dDisplay = d > 0 ? d + (d === 1 ? " day, " : " days, ") : "";
-  const hDisplay = h > 0 ? h + (h === 1 ? " hour, " : " hours, ") : "";
-  const mDisplay = m > 0 ? m + (m === 1 ? " minute, " : " minutes, ") : "";
-  return dDisplay + hDisplay + mDisplay;
-  }
-
-useInterval(async () => {
-  callWithToken('get', `${APIHOST}/api/friend/requests`, {}).then((response) => {
-    setNotifications(response.data.friendRequestList.map(makeNotifs));
-    function makeNotifs(obj) {
-    return {
-    id: obj.friendRequestID,
-    title: `${obj.userName} added you as a Friend!`,
-    description: `${secondsToDhms(obj.timeDiff)} ago`,
-    avatar: obj.avatar,
-    type: null,
-    createdAt: null,
-    isUnRead: true,
-    name: obj.userName,
-  }
-}
-  }).catch((err) => alert(err));
-}, 3000)
-
-useInterval(async () => {
-  callWithToken('get', `${APIHOST}/api/meal/requests`, {}).then((response) => {
-    console.log("this is alert");
-    console.log(response);
-    setMealNotifications(response.data.mealRequestList.map(makeNotifs));
-    console.log(mealNotifications);
-    function makeNotifs(obj) {
-    return {
-    id: obj.mealRequestID,
-    title: `${obj.userName} wants to grab a meal with you!`,
-    description: `${secondsToDhms(obj.timeDiff)} ago`,
-    avatar: null,
-    type: null,
-    createdAt: null,
-    isUnRead: true,
-    name: obj.userName,
-    mealAt: obj.mealAt,
-    restaurantName: obj.restaurantName,
-    restaurantAddress: "THIS IS MY ADDRESS"
-  }
-}
-  }).catch((err) => alert(err));
-}, 3000)
-
-
+  useInterval(async () => {
+    callWithToken('get', `${APIHOST}/api/meal/requests`, {}).then((response) => {
+      setMealNotifications(response.data.mealRequestList.map(makeNotifs));
+      function makeNotifs(obj) {
+        return {
+          id: obj.mealRequestID,
+          title: obj.userName,
+          description: "wants to grab a meal with you!",
+          avatar: `/assets/images/avatars/avatar_${obj.avatarNum}.jpg`,
+          type: null,
+          createdAt: dayjs(`${obj.createdAt}Z`).fromNow(),
+          isUnRead: true,
+          name: obj.userName,
+          mealAt: obj.mealAt,
+          restaurantName: obj.restaurantName,
+          restaurantAddress: obj.restaurantAddress
+        };
+      }
+    }).catch((err) => alert(err));
+  }, 3000);
 
   const navigate = useNavigate();
   const handleClickOpen = (notification) => {
@@ -134,7 +118,6 @@ useInterval(async () => {
       }).catch((err) => {alert(err); handleClose()})
   }
 
-
   const handleConfirmMeal = () =>{
     callWithToken('post', `${APIHOST}/api/meal/accept-request`, {meal_request_id: tempFriendRequestID}).then((response) => {
     alert("Succesfully accepted meal request")
@@ -150,14 +133,12 @@ useInterval(async () => {
       navigate('/', { replace: true});
       }).catch((err) => {alert(err); handleClose()})
   }
-  
 
   const handleClose = () => {
     setOpenDialogue(false);
   };
 
-  const totalUnRead = notifications.filter((item) => item.isUnRead === true).length;
-
+  const totalUnRead = friendNotifications.filter((item) => item.isUnRead === true).length + mealNotifications.filter((item) => item.isUnRead === true).length;
 
   const handleOpen = (event) => {
     setOpen(event.currentTarget);
@@ -167,10 +148,15 @@ useInterval(async () => {
     setOpen(null);
   };
 
-
   const handleMarkAllAsRead = () => {
-    setNotifications(
-      notifications.map((notification) => ({
+    setFriendNotifications(
+      friendNotifications.map((notification) => ({
+        ...notification,
+        isUnRead: false,
+      }))
+    );
+    setMealNotifications(
+      mealNotifications.map((notification) => ({
         ...notification,
         isUnRead: false,
       }))
@@ -263,7 +249,7 @@ useInterval(async () => {
               </ListSubheader>
             
             
-            {notifications.map((notification) => (
+            {friendNotifications.map((notification) => (
             <Box>
               <ListItemButton onClick={()=>handleClickOpen(notification)}>
               <NotificationItem key={notification.id} notification={notification}/>
@@ -354,7 +340,7 @@ function NotificationItem({ notification }) {
             }}
           >
             <Iconify icon="eva:clock-outline" sx={{ mr: 0.5, width: 16, height: 16 }} />
-            {fToNow(notification.createdAt)}
+            {notification.createdAt}
           </Typography>
         }
       />
