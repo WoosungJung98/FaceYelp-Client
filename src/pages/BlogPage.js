@@ -2,7 +2,7 @@ import axios from 'axios';
 import { Helmet } from 'react-helmet-async';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Grid,  Stack, TextField, Dialog, DialogTitle, 
-  DialogContent, DialogContentText, DialogActions, Pagination, Typography } from '@mui/material';
+  DialogContent, DialogActions, Pagination, Typography } from '@mui/material';
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import * as React from 'react';
 import Box from '@mui/material/Box';
@@ -35,7 +35,6 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DesktopDatePicker, TimePicker } from '@mui/x-date-pickers';
 import * as dayjs from 'dayjs';
 import * as utc from 'dayjs/plugin/utc'; // import plugin
-import { LocalConvenienceStoreOutlined } from '@mui/icons-material';
 import Iconify from '../components/iconify';
 import { APIHOST } from '../config';
 import { getCookie } from '../common/helpers/api/session';
@@ -49,7 +48,6 @@ export default function BlogPage() {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState(dayjs());
   const [tempNotif, setTempNotif] = useState(null);
-  const [notifications, setNotifications] = useState([]);
   const [openDialogue, setOpenDialogue] = useState(false);
   const [tempFriendRequestID, setTempFriendRequestID] = useState(null);
   const [reviews, setReviews] = useState([]);
@@ -58,6 +56,8 @@ export default function BlogPage() {
   const reviewInput = useRef("");
   const [starCount, setStarCount] = useState(0);
   dayjs.extend(utc);
+
+  const { businessID } = useParams();
 
   const navigate = useNavigate();
 
@@ -70,7 +70,7 @@ export default function BlogPage() {
       setReviews(response.data.review.list);
       setReviewsLength(response.data.review.totalLength);
     }).catch((err) => alert(err));
-  }, [page])
+  }, [page, businessID])
 
   useEffect(() => {
     if(isAuthenticated) {
@@ -137,11 +137,10 @@ export default function BlogPage() {
       body: reviewInput.current,
       stars: starCount
     }).then((response) => {
-      navigate(0);
+      if(response.status !== 200) alert(response.data.msg);
+      else navigate(0);
     }).catch((err) => alert(err));
   }
-
-  const { businessID } = useParams();
 
   const [restaurantInfo, setRestaurantInfo] = useState({
       "address": "empty",
@@ -315,30 +314,30 @@ export default function BlogPage() {
     ));
   }, [restaurantInfo.hours]);
 
-  const makeReviews = (review) => {
-    return <Box>
-    <Grid container wrap="nowrap" spacing={2}>
-    <Grid item>
-      <Avatar alt="Remy Sharp"/> 
-    </Grid>
-    <Grid justifyContent="left" item xs zeroMinWidth>
-      <div>
-      <h4 style={{ margin: 0, textAlign: "left" }}>
-      {review.userName} </h4>
-      <Rating name="read-only" value={review.stars} readOnly />
-      </div>
-      <p style={{ textAlign: "left" }}>
-        {review.body}
-        <br />
-      </p>
-      <p style={{ textAlign: "left", color: "gray" }}>
-        Created on: {dayjs(`${review.createdAt}Z`).format('MMM D, YYYY h:mm A')}
-      </p>
-    </Grid>
-    </Grid>
-    <Divider variant="fullWidth" style={{ margin: "30px 0" }} />
+  const makeReviews = (review) => (
+    <Box>
+      <Grid container wrap="nowrap" spacing={2}>
+        <Grid item>
+          <Avatar alt="Remy Sharp"/> 
+        </Grid>
+        <Grid justifyContent="left" item xs zeroMinWidth>
+          <div>
+          <h4 style={{ margin: 0, textAlign: "left" }}>
+          {review.userName} </h4>
+          <Rating name="read-only" value={review.stars} readOnly />
+          </div>
+          <p style={{ textAlign: "left" }}>
+            {review.body}
+            <br />
+          </p>
+          <p style={{ textAlign: "left", color: "gray" }}>
+            Created on: {dayjs(`${review.createdAt}Z`).format('MMM D, YYYY h:mm A')}
+          </p>
+        </Grid>
+      </Grid>
+      <Divider variant="fullWidth" style={{ margin: "30px 0" }} />
     </Box>
-  }
+  );
 
   const isAuthenticatedReviews = () => {
     if (isAuthenticated) {
@@ -469,9 +468,8 @@ export default function BlogPage() {
     );
   };
   
-  const getFriendListSidebar = () => {
-    return (
-      <>
+  const getFriendListSidebar = () => (
+    <>
       <Box sx={{ p: 1, width: '30%' }}>
         <Box sx={{ overflow: 'auto' }}>
           <ClickAwayListener onClickAway={handleClose}>
@@ -499,7 +497,7 @@ export default function BlogPage() {
             </Box>
           </ClickAwayListener>
           <List style={{maxHeight: 500, overflow:'auto'}}>
-            {friendList !== undefined && friendList.map((friend, index) => (
+            {friendList !== undefined && friendList.map((friend) => (
               <ListItem key={friend.friendID} disablePadding>
                 <ListItemButton onClick={()=>handleClickOpen(friend.friendID, friend.userName)}>
                   <Avatar src={`/assets/images/avatars/avatar_${friend.avatarNum}.jpg`} alt="photoURL" />
@@ -534,7 +532,7 @@ export default function BlogPage() {
                   </LocalizationProvider>
                   </DialogContent>
                   <DialogActions>
-                    <Button onClick = {handleCancel}>Canel</Button>
+                    <Button onClick = {handleCancel}>Cancel</Button>
                     <Button onClick = {handleSendMealRequest} autoFocus>
                       Confirm
                     </Button>
@@ -545,10 +543,8 @@ export default function BlogPage() {
           </List>
         </Box>
       </Box>
-      </>
-    );
-  };
-
+    </>
+  );
 
   return (
     <>

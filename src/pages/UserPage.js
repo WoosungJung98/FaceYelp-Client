@@ -1,7 +1,6 @@
 import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
-import { filter } from 'lodash';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 // @mui
 import {
   Card,
@@ -30,6 +29,7 @@ import { UserListHead, UserListToolbar } from '../sections/@dashboard/user';
 // mock
 import { APIHOST } from '../config';
 import { callWithToken } from '../common/helpers/utils/common';
+import { getCookie } from '../common/helpers/api/session';
 
 // ----------------------------------------------------------------------
 
@@ -44,47 +44,25 @@ const TABLE_HEAD = [
 
 // ----------------------------------------------------------------------
 
-function descendingComparator(a, b, orderBy) {
-  if (b[orderBy] < a[orderBy]) {
-    return -1;
-  }
-  if (b[orderBy] > a[orderBy]) {
-    return 1;
-  }
-  return 0;
-}
-
-function getComparator(order, orderBy) {
-  return order === 'desc'
-    ? (a, b) => descendingComparator(a, b, orderBy)
-    : (a, b) => -descendingComparator(a, b, orderBy);
-}
-
-function applySortFilter(array, comparator, query) {
-  const stabilizedThis = array.map((el, index) => [el, index]);
-  stabilizedThis.sort((a, b) => {
-    const order = comparator(a[0], b[0]);
-    if (order !== 0) return order;
-    return a[1] - b[1];
-  });
-  if (query) {
-    return filter(array, (_user) => _user.name.toLowerCase().indexOf(query.toLowerCase()) !== -1);
-  }
-  return stabilizedThis.map((el) => el[0]);
-}
-
 export default function UserPage() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(null);
   const [page, setPage] = useState(0);
-  const [order, setOrder] = useState('asc');
   const [selected, setSelected] = useState([]);
-  const [orderBy, setOrderBy] = useState('name');
   const [filterName, setFilterName] = useState('');
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [fetchedUserList, setFetchedUserList] = useState([]);
   const [userListTotal, setUserListTotal] = useState(0);
-  const [friendID, setFriendID] = useState([]);
+  const [userDetailInfo, setUserDetailInfo] = useState({userID: 1});
+  const isAuthenticated = getCookie("refreshToken") !== undefined;
+
+  useEffect(() => {
+    if(isAuthenticated) {
+      callWithToken('get', `${APIHOST}/api/user/info`, {}).then((response) => {
+        setUserDetailInfo(response.data.userInfo);
+      }).catch((err) => alert(err));
+    }
+  }, [isAuthenticated]);
   
   useEffect(() => {
     const params = {
@@ -124,17 +102,15 @@ export default function UserPage() {
     setPage(0);
     setFilterName(event.target.value);
   };
-  const addFriend = (event) =>{
-  }
 
-  const addUser = (event, friendid) => {
+  const addUser = useCallback((event, friendid) => {
     callWithToken('post', `${APIHOST}/api/friend/send-request`, 
     {
       friend_id: friendid
     })
     .then((response) =>{ navigate(0); })
     .catch((err) => alert(err));
-  }
+  }, [navigate]);
 
   const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - userListTotal) : 0;
 
@@ -142,15 +118,18 @@ export default function UserPage() {
 
   const isNotFound = !userListTotal && !!filterName;
 
-  const getAddFriendButton = (userID, friendID, isFriend, hasSentRequest) => {
+  const getAddFriendButton = useCallback((userID, isFriend, hasSentRequest) => {
+    if(userDetailInfo.userID === userID) {
+      return (<Button variant="contained" disabled>Myself</Button>);
+    }
     if(isFriend) {
       return (<Button variant="contained" disableFocusRipple disableRipple color="success" startIcon={<Iconify icon="material-symbols:check" />}>Friends</Button>);
     }
     if(hasSentRequest) {
       return (<Button variant="contained" disabled startIcon={<Iconify icon="material-symbols:arrow-forward-rounded" />}>Request Sent</Button>);
     }
-    return (<Button variant="contained" onClick = {(event)=> addUser(event, userID)} onChange={(event) => addUser(event, friendID)} startIcon={<Iconify icon="eva:plus-fill" />}>Add Friend</Button>);
-  }
+    return (<Button variant="contained" onClick = {(event)=> addUser(event, userID)} startIcon={<Iconify icon="eva:plus-fill" />}>Add Friend</Button>);
+  }, [addUser, userDetailInfo.userID]);
 
   const userListTableRows = useMemo(() =>
     fetchedUserList.map((row) => {
@@ -180,7 +159,7 @@ export default function UserPage() {
           <TableCell align="left">{isVerified}</TableCell>
 
           <TableCell component="th" scope="row" padding="none">
-          {getAddFriendButton(row.userID, row.friendID, row.isFriend, row.hasSentRequest)}
+          {getAddFriendButton(row.userID, row.isFriend, row.hasSentRequest)}
           </TableCell>
           
           <TableCell align="right">
@@ -191,7 +170,7 @@ export default function UserPage() {
         </TableRow>
       );
     })
-  , [fetchedUserList]);
+  , [fetchedUserList, getAddFriendButton, selected]);
 
   return (
     <>
