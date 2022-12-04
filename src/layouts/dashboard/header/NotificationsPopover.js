@@ -81,7 +81,7 @@ export default function NotificationsPopover() {
           createdAt: dayjs(`${obj.createdAt}Z`).fromNow(),
           isUnRead: true,
           name: obj.userName,
-          mealAt: obj.mealAt,
+          mealAt: dayjs(`${obj.mealAt}Z`).format('MMM D, YYYY h:mm A'),
           restaurantName: obj.restaurantName,
           restaurantAddress: obj.restaurantAddress
         };

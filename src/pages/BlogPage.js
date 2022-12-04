@@ -324,7 +324,7 @@ export default function BlogPage() {
     <Grid justifyContent="left" item xs zeroMinWidth>
       <div>
       <h4 style={{ margin: 0, textAlign: "left" }}>
-      Name: {review.userName} </h4>
+      {review.userName} </h4>
       <Rating name="read-only" value={review.stars} readOnly />
       </div>
       <p style={{ textAlign: "left" }}>
@@ -332,7 +332,7 @@ export default function BlogPage() {
         <br />
       </p>
       <p style={{ textAlign: "left", color: "gray" }}>
-        Created at: {review.createdAt}
+        Created on: {dayjs(`${review.createdAt}Z`).format('MMM D, YYYY h:mm A')}
       </p>
     </Grid>
     </Grid>
