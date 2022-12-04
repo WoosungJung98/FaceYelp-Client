@@ -15,30 +15,33 @@ export default function UpcomingMealsPage() {
       <DataGrid
         rows={meals}
         columns={columns}
-        //  experimentalFeatures={{ newEditingApi: true }}
+        disableColumnFilter
       />
     </div>
   );
 }
 
 const columns = [
-  { field: 'friendName', headerName: 'Name', width: 220, editable: false },
+  { field: 'friendName', headerName: 'Name', width: 220, editable: false, sortable: false },
   {
     field: 'mealAt',
     headerName: 'Time',
     width: 180,
     editable: false,
+    sortable: false
   },
   {
     field: 'restaurantName',
     headerName: 'Restaurant Name',
     width: 220,
     editable: false,
+    sortable: false
   },
   {
     field:'restaurantAddress',
     headerName: 'Restaurant Address',
     width: 250,
-    editable: false
+    editable: false,
+    sortable: false
   }
 ];
