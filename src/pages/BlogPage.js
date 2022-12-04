@@ -473,7 +473,7 @@ export default function BlogPage() {
                   </LocalizationProvider>
                   </DialogContent>
                   <DialogActions>
-                    <Button onClick = {handleCancel}>Ignore</Button>
+                    <Button onClick = {handleCancel}>Canel</Button>
                     <Button onClick = {handleSendMealRequest} autoFocus>
                       Confirm
                     </Button>

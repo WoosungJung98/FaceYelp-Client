@@ -39,6 +39,9 @@ import { APIHOST } from '../../../config';
 // ----------------------------------------------------------------------
 export default function NotificationsPopover() {
   const [tempNotif, setTempNotif] = useState(null);
+  const [tempRestaurantName, setTempRestaurantName] = useState(null);
+  const [tempTime, setTempTime] = useState(null);
+  const [tempRestaurantAddress, setTempRestaurantAddress] = useState(null);
   const [open, setOpen] = useState(null);
   const [friendNotifications, setFriendNotifications] = useState([]);
   const [mealNotifications, setMealNotifications] = useState([]);
@@ -93,6 +96,9 @@ export default function NotificationsPopover() {
     setOpenDialogue(true);
   };
   const handleClickOpenMeal = (notification) => {
+    setTempRestaurantName(notification.restaurantName);
+    setTempTime(notification.mealAt);
+    setTempRestaurantAddress(notification.restaurantAddress);
     setTempNotif(notification.name);
     setTempFriendRequestID(notification.id);
     setOpenDialogueMeal(true);
@@ -230,9 +236,9 @@ export default function NotificationsPopover() {
                 </DialogTitle>
                 <DialogContent>
                   <DialogContentText id="alert-dialog-description">
-                    {tempNotif} wants to grab a meal with you at {notification.restaurantName}: <br />
-                    Location: {notification.restaurantAddress} <br />
-                    Time: {notification.mealAt} 
+                    {tempNotif} wants to grab a meal with you at {tempRestaurantName}: <br />
+                    Location: {tempRestaurantAddress} <br />
+                    Time: {tempTime} 
                   </DialogContentText>
                 </DialogContent>
                 <DialogActions>
