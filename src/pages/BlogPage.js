@@ -33,7 +33,8 @@ import { Divider, Avatar} from "@material-ui/core";
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DesktopDatePicker, TimePicker } from '@mui/x-date-pickers';
-import dayjs from 'dayjs';
+import * as dayjs from 'dayjs';
+import * as utc from 'dayjs/plugin/utc'; // import plugin
 import { LocalConvenienceStoreOutlined } from '@mui/icons-material';
 import Iconify from '../components/iconify';
 import { APIHOST } from '../config';
@@ -56,6 +57,7 @@ export default function BlogPage() {
   const [reviewsLength, setReviewsLength] = useState(10);
   const [reviewInput, setReviewInput] = useState("");
   const [starCount, setStarCount] = useState(0);
+  dayjs.extend(utc);
 
   const navigate = useNavigate();
 
@@ -65,14 +67,9 @@ export default function BlogPage() {
       page,
       length: 5
     }}).then((response) => {
-      console.log('hello')
-      console.log(response)
       setReviews(response.data.review.list);
       setReviewsLength(response.data.review.totalLength);
-      console.log(reviewsLength)
-      console.log('christian')
     }).catch((err) => alert(err));
-
   }, [page])
 
   useEffect(() => {
@@ -93,7 +90,6 @@ export default function BlogPage() {
   };
 
   const handleChangePage = (event, newValue) => {
-    console.log(newValue);
     setPage(newValue);
   }; 
   const handleChangeReview = (event) => {
@@ -113,46 +109,40 @@ export default function BlogPage() {
   };
 
   const handleSendMealRequest = () => {
-    const date = `${value.$y}-${value.$M + 1}-${value.$D} ${value.$H}:${value.$m}:${value.$s}`;
-    console.log(date)
-    console.log(businessID)
-    console.log(tempFriendRequestID)
-    console.log(tempNotif)
-    console.log(restaurantInfo.businessName)
-
-
-    callWithToken('post', `${APIHOST}/api/meal/send-request`,
-    {friend_id: `${tempFriendRequestID}`, meal_at: "2022-12-19 12:10:10", restaurant_id: `${businessID}`})
-    .then((response) => {
-      alert(`Successfully sent a meal request to ${tempNotif}:
-           Time: ${date} 
-           Location: ${restaurantInfo.businessName}, ${restaurantInfo.address}`);
+    callWithToken('post', `${APIHOST}/api/meal/send-request`, {
+      friend_id: `${tempFriendRequestID}`,
+      meal_at: value.utc().format(),
+      restaurant_id: `${businessID}`
+    }).then((response) => {
+      if([400, 404, 409].includes(response.status)) alert(response.data.msg);
+      else {
+        alert(`Successfully sent a meal request to ${tempNotif}:
+               Time: ${value.format('YYYY-MM-DD HH:mm:ss')} 
+               Location: ${restaurantInfo.businessName}, ${restaurantInfo.address}`);
+      }
       setOpenDialogue(false);
-    }).catch((err) => 
-    {alert(err);
-    setOpenDialogue(false)});
+    }).catch((err) => {
+      alert(err);
+      setOpenDialogue(false);
+    });
   }
 
-
-  
   const handleCancel = () => {
     setOpenDialogue(false);
   }
+
   const submitReview = () =>{
-    console.log(reviewInput);
-    console.log(starCount);
     callWithToken('post', `${APIHOST}/api/restaurant/${businessID}/review-create`,
     {
       body: reviewInput,
       stars: starCount
     }).then((response) => {
-      alert("Successfully created a review");
-      navigate(`/restaurant/${businessID}`, { replace: true });
+      navigate(0);
     }).catch((err) => alert(err));
   }
 
-  
   const { businessID } = useParams();
+
   const [restaurantInfo, setRestaurantInfo] = useState({
       "address": "empty",
       "businessID": "empty",
@@ -334,7 +324,7 @@ export default function BlogPage() {
     <Grid justifyContent="left" item xs zeroMinWidth>
       <div>
       <h4 style={{ margin: 0, textAlign: "left" }}>
-      Name: {review.userName} </h4>
+      {review.userName} </h4>
       <Rating name="read-only" value={review.stars} readOnly />
       </div>
       <p style={{ textAlign: "left" }}>
@@ -342,7 +332,7 @@ export default function BlogPage() {
         <br />
       </p>
       <p style={{ textAlign: "left", color: "gray" }}>
-        Created at: {review.createdAt}
+        Created on: {dayjs(`${review.createdAt}Z`).format('MMM D, YYYY h:mm A')}
       </p>
     </Grid>
     </Grid>
@@ -483,7 +473,7 @@ export default function BlogPage() {
                   </LocalizationProvider>
                   </DialogContent>
                   <DialogActions>
-                    <Button onClick = {handleCancel}>Ignore</Button>
+                    <Button onClick = {handleCancel}>Canel</Button>
                     <Button onClick = {handleSendMealRequest} autoFocus>
                       Confirm
                     </Button>

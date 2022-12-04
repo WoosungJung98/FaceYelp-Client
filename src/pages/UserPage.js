@@ -1,7 +1,6 @@
-import axios from 'axios';
 import { Helmet } from 'react-helmet-async';
+import { useNavigate } from 'react-router-dom';
 import { filter } from 'lodash';
-import { sentenceCase } from 'change-case';
 import { useState, useEffect, useMemo } from 'react';
 // @mui
 import {
@@ -24,15 +23,12 @@ import {
   TablePagination,
 } from '@mui/material';
 // components
-import Label from '../components/label';
 import Iconify from '../components/iconify';
 import Scrollbar from '../components/scrollbar';
 // sections
 import { UserListHead, UserListToolbar } from '../sections/@dashboard/user';
 // mock
-import USERLIST from '../_mock/user';
 import { APIHOST } from '../config';
-
 import { callWithToken } from '../common/helpers/utils/common';
 
 // ----------------------------------------------------------------------
@@ -78,6 +74,7 @@ function applySortFilter(array, comparator, query) {
 }
 
 export default function UserPage() {
+  const navigate = useNavigate();
   const [open, setOpen] = useState(null);
   const [page, setPage] = useState(0);
   const [order, setOrder] = useState('asc');
@@ -90,7 +87,6 @@ export default function UserPage() {
   const [friendID, setFriendID] = useState([]);
   
   useEffect(() => {
-    console.log(page + 1);
     const params = {
       page: page + 1,
       length: rowsPerPage,
@@ -101,8 +97,6 @@ export default function UserPage() {
     }
 
     callWithToken('get', `${APIHOST}/api/user/list`, params).then((response) =>{
-        console.log(response);
-        console.log("CHRIST");
         setFetchedUserList(response.data.user.list);
         setUserListTotal(response.data.user.totalLength);
       })
@@ -138,7 +132,7 @@ export default function UserPage() {
     {
       friend_id: friendid
     })
-    .then((response) =>{alert(response.data.msg);})
+    .then((response) =>{ navigate(0); })
     .catch((err) => alert(err));
   }
 
@@ -147,6 +141,16 @@ export default function UserPage() {
   // const fetchedUserList = applySortFilter(USERLIST, getComparator(order, orderBy), filterName);
 
   const isNotFound = !userListTotal && !!filterName;
+
+  const getAddFriendButton = (userID, friendID, isFriend, hasSentRequest) => {
+    if(isFriend) {
+      return (<Button variant="contained" disableFocusRipple disableRipple color="success" startIcon={<Iconify icon="material-symbols:check" />}>Friends</Button>);
+    }
+    if(hasSentRequest) {
+      return (<Button variant="contained" disabled startIcon={<Iconify icon="material-symbols:arrow-forward-rounded" />}>Request Sent</Button>);
+    }
+    return (<Button variant="contained" onClick = {(event)=> addUser(event, userID)} onChange={(event) => addUser(event, friendID)} startIcon={<Iconify icon="eva:plus-fill" />}>Add Friend</Button>);
+  }
 
   const userListTableRows = useMemo(() =>
     fetchedUserList.map((row) => {
@@ -176,7 +180,7 @@ export default function UserPage() {
           <TableCell align="left">{isVerified}</TableCell>
 
           <TableCell component="th" scope="row" padding="none">
-          <Button variant="contained" onClick = {(event)=>  addUser(event, row.userID)} onChange={(event) => addUser(event, row.friendID)} startIcon={<Iconify icon="eva:plus-fill" />}>Add User</Button>
+          {getAddFriendButton(row.userID, row.friendID, row.isFriend, row.hasSentRequest)}
           </TableCell>
           
           <TableCell align="right">
@@ -192,7 +196,7 @@ export default function UserPage() {
   return (
     <>
       <Helmet>
-        <title> User | Minimal UI </title>
+        <title> Find Friends </title>
       </Helmet>
 
       <Container>
@@ -200,9 +204,6 @@ export default function UserPage() {
           <Typography variant="h4" gutterBottom>
             Find Friends
           </Typography>
-          <Button variant="contained" startIcon={<Iconify icon="eva:plus-fill" />}>
-            New User
-          </Button>
         </Stack>
         <Card>
           <UserListToolbar numSelected={selected.length} filterName={filterName} onFilterName={handleFilterByName} />
@@ -211,13 +212,8 @@ export default function UserPage() {
             <TableContainer sx={{ minWidth: 800 }}>
               <Table>
                 <UserListHead
-                  // order={order}
-                  // orderBy={orderBy}
                   headLabel={TABLE_HEAD}
                   rowCount={userListTotal}
-                  // numSelected={selected.length}
-                  // onRequestSort={handleRequestSort}
-                  // onSelectAllClick={handleSelectAllClick}
                 />
                 <TableBody>
                   {userListTableRows}
@@ -288,9 +284,6 @@ export default function UserPage() {
         <MenuItem>
           <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
           Edit
-        </MenuItem>
-        <MenuItem onClick={(event)=>{addFriend(event)}}>
-        Add Friend
         </MenuItem>
         <MenuItem sx={{ color: 'error.main' }}>
           <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
