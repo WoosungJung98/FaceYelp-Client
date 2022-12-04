@@ -3,7 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Grid,  Stack, TextField, Dialog, DialogTitle, 
   DialogContent, DialogContentText, DialogActions, Pagination, Typography } from '@mui/material';
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import * as React from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -55,7 +55,7 @@ export default function BlogPage() {
   const [reviews, setReviews] = useState([]);
   const [page, setPage] = useState(1);
   const [reviewsLength, setReviewsLength] = useState(10);
-  const [reviewInput, setReviewInput] = useState("");
+  const reviewInput = useRef("");
   const [starCount, setStarCount] = useState(0);
   dayjs.extend(utc);
 
@@ -93,7 +93,7 @@ export default function BlogPage() {
     setPage(newValue);
   }; 
   const handleChangeReview = (event) => {
-    setReviewInput(event.target.value);
+    reviewInput.current = event.target.value;
   }; 
 
   const handleClose = () => {
@@ -134,7 +134,7 @@ export default function BlogPage() {
   const submitReview = () =>{
     callWithToken('post', `${APIHOST}/api/restaurant/${businessID}/review-create`,
     {
-      body: reviewInput,
+      body: reviewInput.current,
       stars: starCount
     }).then((response) => {
       navigate(0);
@@ -341,37 +341,65 @@ export default function BlogPage() {
   }
 
   const isAuthenticatedReviews = () => {
-    if (isAuthenticated)
-    {
-      return (<Box style={{width: '100%'}}>
-      <h1 style={{marginLeft: 50}}>
-        Write a Review:
-      </h1>
-      <p style={{marginLeft: 50}}>
-        Your name will be shown.
-      </p>
-      <Box style = {{width: "80%", marginLeft: 'auto', marginRight: 'auto'}}>
-      <Rating name="simple-controlled" value={starCount} onChange={(event, newValue)=> {setStarCount(newValue)}} />
-      <TextField
-            fullWidth
-            id="standard-multiline-flexible"
-            label="Submit a Review"
-            multiline
-            maxRows={10}
-            value={reviewInput}
-            onChange={handleChangeReview}
-            variant="standard"
-          />
-        <br />
-        <Button onClick={submitReview}>
-        Submit
-      </Button>
-      </Box>
-      </Box>
+    if (isAuthenticated) {
+      return (
+        <>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            p: 1,
+            m: 1,
+            bgcolor: '#F9FAFB',
+          }}
+        >
+          <h1>
+            Write a review
+          </h1>
+        </Box>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            p: 1,
+            m: 1,
+            bgcolor: '#F9FAFB',
+          }}
+        >
+          <p>
+            Your name will be shown.
+          </p>
+        </Box>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            p: 1,
+            m: 1,
+            bgcolor: '#F9FAFB',
+          }}
+        >
+          <Box style={{width: "80%", marginLeft: 'auto', marginRight: 'auto'}}>
+            <Rating name="simple-controlled" value={starCount} onChange={(event, newValue)=> {setStarCount(newValue)}} />
+            <TextField
+              fullWidth
+              id="standard-multiline-flexible"
+              label="Submit a Review"
+              multiline
+              maxRows={10}
+              onChange={handleChangeReview}
+              variant="standard"
+            />
+            <br />
+            <Button onClick={submitReview}>
+              Submit
+            </Button>
+          </Box>
+        </Box>
+        </>
       );
-    
     }
-    return (<br />)
+    return null;
   };
 
   const isAuthenticatedPage = () => {
