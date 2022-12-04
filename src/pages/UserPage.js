@@ -1,7 +1,6 @@
-import axios from 'axios';
 import { Helmet } from 'react-helmet-async';
+import { useNavigate } from 'react-router-dom';
 import { filter } from 'lodash';
-import { sentenceCase } from 'change-case';
 import { useState, useEffect, useMemo } from 'react';
 // @mui
 import {
@@ -24,15 +23,12 @@ import {
   TablePagination,
 } from '@mui/material';
 // components
-import Label from '../components/label';
 import Iconify from '../components/iconify';
 import Scrollbar from '../components/scrollbar';
 // sections
 import { UserListHead, UserListToolbar } from '../sections/@dashboard/user';
 // mock
-import USERLIST from '../_mock/user';
 import { APIHOST } from '../config';
-
 import { callWithToken } from '../common/helpers/utils/common';
 
 // ----------------------------------------------------------------------
@@ -78,6 +74,7 @@ function applySortFilter(array, comparator, query) {
 }
 
 export default function UserPage() {
+  const navigate = useNavigate();
   const [open, setOpen] = useState(null);
   const [page, setPage] = useState(0);
   const [order, setOrder] = useState('asc');
@@ -135,7 +132,7 @@ export default function UserPage() {
     {
       friend_id: friendid
     })
-    .then((response) =>{alert(response.data.msg);})
+    .then((response) =>{ navigate(0); })
     .catch((err) => alert(err));
   }
 
@@ -215,13 +212,8 @@ export default function UserPage() {
             <TableContainer sx={{ minWidth: 800 }}>
               <Table>
                 <UserListHead
-                  // order={order}
-                  // orderBy={orderBy}
                   headLabel={TABLE_HEAD}
                   rowCount={userListTotal}
-                  // numSelected={selected.length}
-                  // onRequestSort={handleRequestSort}
-                  // onSelectAllClick={handleSelectAllClick}
                 />
                 <TableBody>
                   {userListTableRows}
