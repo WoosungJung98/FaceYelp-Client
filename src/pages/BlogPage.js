@@ -434,10 +434,10 @@ export default function BlogPage() {
         }}
       >
         <Box sx={{ p: 2, width: '50%' }}>
-          <Box sx={{ p: 2, height: '50%' }}>
+          <div style={{ height: '42vh' }} >
             {getGoogleMapLoc()}
-          </Box>
-          <Box sx={{ p: 2, height: '50%' }}>
+          </div>
+          <div style={{ height: '38vh' }}>
             <TableContainer component={Paper}>
               <Table sx={{ minWidth: 10 }} style={{alignSelf:"flex-end"}} aria-label="customized table" size="small">
                 <TableHead>
@@ -451,7 +451,7 @@ export default function BlogPage() {
                 </TableBody>
               </Table>
             </TableContainer>
-          </Box>
+          </div>
         </Box>
         {getFriendListSidebar()}
       </Box>
