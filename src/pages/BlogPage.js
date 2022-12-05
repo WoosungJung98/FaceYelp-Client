@@ -433,21 +433,25 @@ export default function BlogPage() {
           bgcolor: '#F9FAFB',
         }}
       >
-        <Box style={{height: '40vh', width: '50%', p: 1, m:1 }} >
-          {getGoogleMapLoc()}
-          <TableContainer component={Paper}>
-            <Table sx={{ minWidth: 10 }} style={{alignSelf:"flex-end"}} aria-label="customized table" size="small">
-              <TableHead>
-                <TableRow>
-                  <StyledTableCell> Days</StyledTableCell>
-                  <StyledTableCell align="left">Hours</StyledTableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {restaurantHoursTableItems}
-              </TableBody>
-            </Table>
-          </TableContainer>
+        <Box sx={{ p: 2, width: '50%' }}>
+          <Box sx={{ p: 2, height: '50%' }}>
+            {getGoogleMapLoc()}
+          </Box>
+          <Box sx={{ p: 2, height: '50%' }}>
+            <TableContainer component={Paper}>
+              <Table sx={{ minWidth: 10 }} style={{alignSelf:"flex-end"}} aria-label="customized table" size="small">
+                <TableHead>
+                  <TableRow>
+                    <StyledTableCell> Days</StyledTableCell>
+                    <StyledTableCell align="left">Hours</StyledTableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {restaurantHoursTableItems}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Box>
         </Box>
         {getFriendListSidebar()}
       </Box>
@@ -457,7 +461,7 @@ export default function BlogPage() {
   
   const getFriendListSidebar = () => (
     <>
-      <Box sx={{ p: 1, width: '30%' }}>
+      <Box sx={{ p: 2, width: '30%' }}>
         <Box sx={{ overflow: 'auto' }}>
           <ClickAwayListener onClickAway={handleClose}>
             <Box>
