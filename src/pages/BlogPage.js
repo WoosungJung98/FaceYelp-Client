@@ -352,19 +352,6 @@ export default function BlogPage() {
             bgcolor: '#F9FAFB',
           }}
         >
-          <h1>
-            Write a review
-          </h1>
-        </Box>
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'center',
-            p: 1,
-            m: 1,
-            bgcolor: '#F9FAFB',
-          }}
-        >
           <p>
             Your name will be shown.
           </p>
@@ -596,9 +583,7 @@ export default function BlogPage() {
       <Rating name="read-only" value={restaurantInfo.stars} readOnly />
     </Box>
     {restaurantImageList()}
-    {isAuthenticatedPage()}
-    {isAuthenticatedReviews()}
-    
+    {isAuthenticatedPage()}    
     <Box
       sx={{
         display: 'flex',
@@ -610,6 +595,7 @@ export default function BlogPage() {
     >
       <h1> Reviews </h1>
     </Box>
+    {isAuthenticatedReviews()}
     <Box
       sx={{
         display: 'flex',

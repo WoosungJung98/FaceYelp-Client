@@ -88,7 +88,7 @@ export default function Header({ onOpenNav }) {
             sm: 1,
           }}
         >
-          {/* <LanguagePopover /> */}
+          <LanguagePopover />
           {isAuthenticated && (
             <>
             <NotificationsPopover />
